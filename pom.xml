@@ -4,6 +4,9 @@
   <artifactId>manage</artifactId>
   <version>0.0.1</version>
   <name>m.manage.jar</name>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
   <dependencies>
 	<!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
 	<dependency>
