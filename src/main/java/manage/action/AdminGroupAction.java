@@ -105,7 +105,7 @@ public class AdminGroupAction extends StatusAction {
 			@ActionTableColMeta(field = "description", title = "描述", width=200),
 			@ActionTableColMeta(field = "sort", title = "排序", width=100,align="left"),
 			@ActionTableColMeta(field = "status", title = "状态",type=TableColType.STATUS,power="manage_system_power",dictionaryType="status",align="center"),
-			@ActionTableColMeta(field = "oid",title="操作",width=150,align="center",buttons={
+			@ActionTableColMeta(field = "oid",title="操作",width=170,align="center",buttons={
 				@ButtonMeta(title="修改", event = ButtonEvent.MODAL,modalWidth=700, url = "action/manageAdminGroup/toEditGroup",
 					params={@ParamMeta(name = "model.oid", field="oid")},success=SuccessMethod.REFRESH,style=ButtonStyle.NORMAL,
 					power="manage_system_power"

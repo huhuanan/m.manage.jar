@@ -9,10 +9,14 @@ import java.util.Map;
 
 import m.common.action.ActionMeta;
 import m.common.action.ActionResult;
+import m.common.model.type.FieldType;
 import m.common.model.util.ModelQueryUtil;
 import m.common.model.util.QueryOrder;
 import m.common.model.util.QueryPage;
 import m.system.RuntimeData;
+import m.system.document.DocumentMeta;
+import m.system.document.DocumentMethodMeta;
+import m.system.document.DocumentParamMeta;
 import m.system.exception.MException;
 import m.system.util.JSONMessage;
 import m.system.util.StringUtil;
@@ -22,7 +26,7 @@ import manage.model.ImageInfo;
 import manage.service.ImageAdminService;
 import manage.service.ImageInfoService;
 
-@ActionMeta(name="manageImageInfo")
+@ActionMeta(name="manageImageInfo",title="系统-图片信息管理")
 public class ImageInfoAction extends ManageAction {
 	private String adminToken;
 	private Boolean isUsed;
@@ -59,6 +63,14 @@ public class ImageInfoAction extends ManageAction {
 	 * 上传图片
 	 * @return
 	 */
+	@DocumentMeta(
+		method=@DocumentMethodMeta(title="上传图片",description="",permission=true),
+		params={
+			@DocumentParamMeta(name="imageType",description="图片类型",type=FieldType.STRING,length=20,notnull=true),
+			@DocumentParamMeta(name="thumRatio",description="缩略图比例",type=FieldType.DOUBLE),
+			@DocumentParamMeta(name="thumWidth",description="缩略图宽",type=FieldType.DOUBLE),
+		}
+	)
 	public JSONMessage uploadImage(){
 		JSONMessage message=new JSONMessage();
 		try {
@@ -72,6 +84,7 @@ public class ImageInfoAction extends ManageAction {
 				ia.setOid(getService(ImageAdminService.class).getOid(adminToken));
 			}
 			Map<String,File> map=super.getFileMap();
+			if(null==map||map.size()<1) throw new MException(this.getClass(),"没有接收到图片");
 			for(String key : map.keySet()){
 				model.setOid("");
 				model.setImageType(imageType);
@@ -98,6 +111,15 @@ public class ImageInfoAction extends ManageAction {
 	 * 选择图片数据
 	 * @return
 	 */
+	@DocumentMeta(
+		method=@DocumentMethodMeta(title="图片列表",description="",permission=true),
+		params={
+			@DocumentParamMeta(name="imageType",description="图片类型",type=FieldType.STRING,length=20,notnull=true),
+			@DocumentParamMeta(name="isUsed",description="是否已使用",type=FieldType.STRING,length=10),
+			@DocumentParamMeta(name="page.index",description="分页开始位置",type=FieldType.INT),
+			@DocumentParamMeta(name="page.num",description="分页每页数量",type=FieldType.INT),
+		}
+	)
 	public JSONMessage imageList(){
 		JSONMessage message=new JSONMessage();
 		try{
