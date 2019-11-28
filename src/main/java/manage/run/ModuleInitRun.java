@@ -14,6 +14,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import m.common.model.util.ModelUpdateUtil;
+import m.system.RuntimeData;
 import m.system.SystemInitRun;
 import m.system.db.DBManager;
 import m.system.db.TransactionManager;
@@ -22,6 +23,13 @@ import manage.model.ModuleInfo;
 
 
 public class ModuleInitRun extends SystemInitRun {
+	public void init() {
+		RuntimeData.addActionPack("manage.action");
+		RuntimeData.addModelPack("manage.model");
+		RuntimeData.addStaticField(new String[] {"ImageInfo.imgPath","ImageInfo.thumPath"});
+		RuntimeData.addSecretField(new String[] {"AdminLogin.password","AdminLogin.token"});
+	}
+	
 	private static String adminPage;
 	private static List<String[]> powerList;
 	public void run(boolean isMain) {
