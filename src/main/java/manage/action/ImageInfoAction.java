@@ -26,7 +26,7 @@ import manage.model.ImageInfo;
 import manage.service.ImageAdminService;
 import manage.service.ImageInfoService;
 
-@ActionMeta(name="manageImageInfo",title="系统-图片信息管理")
+@ActionMeta(name="manageImageInfo",title="系统-图片管理")
 public class ImageInfoAction extends ManageAction {
 	private String adminToken;
 	private Boolean isUsed;
@@ -64,8 +64,10 @@ public class ImageInfoAction extends ManageAction {
 	 * @return
 	 */
 	@DocumentMeta(
-		method=@DocumentMethodMeta(title="上传图片",description="",permission=true),
+		method=@DocumentMethodMeta(title="上传图片",description="图片上传后没有关联业务",permission=true,
+			result="无法调试, 调用接口需要传输文件流."),
 		params={
+			@DocumentParamMeta(name="adminToken",description="token",type=FieldType.STRING,length=20),
 			@DocumentParamMeta(name="imageType",description="图片类型",type=FieldType.STRING,length=20,notnull=true),
 			@DocumentParamMeta(name="thumRatio",description="缩略图比例",type=FieldType.DOUBLE),
 			@DocumentParamMeta(name="thumWidth",description="缩略图宽",type=FieldType.DOUBLE),
@@ -112,8 +114,9 @@ public class ImageInfoAction extends ManageAction {
 	 * @return
 	 */
 	@DocumentMeta(
-		method=@DocumentMethodMeta(title="图片列表",description="",permission=true),
+		method=@DocumentMethodMeta(title="图片列表",description="查询自己上传的所有图片",permission=true),
 		params={
+			@DocumentParamMeta(name="adminToken",description="token",type=FieldType.STRING,length=20),
 			@DocumentParamMeta(name="imageType",description="图片类型",type=FieldType.STRING,length=20,notnull=true),
 			@DocumentParamMeta(name="isUsed",description="是否已使用",type=FieldType.STRING,length=10),
 			@DocumentParamMeta(name="page.index",description="分页开始位置",type=FieldType.INT),
@@ -166,6 +169,13 @@ public class ImageInfoAction extends ManageAction {
 	 * 删除图片方法
 	 * @return
 	 */
+	@DocumentMeta(
+		method=@DocumentMethodMeta(title="删除图片",description="已使用的不能删除",permission=true),
+		params={
+			@DocumentParamMeta(name="adminToken",description="token",type=FieldType.STRING,length=20),
+			@DocumentParamMeta(name="imageOid",description="图片oid",type=FieldType.STRING,length=20,notnull=true),
+		}
+	)
 	public JSONMessage delete(){
 		JSONMessage message=new JSONMessage();
 		try{
@@ -177,7 +187,7 @@ public class ImageInfoAction extends ManageAction {
 			}else{
 				ia.setOid(getService(ImageAdminService.class).getOid(adminToken));
 			}
-			message.push("oid", getService(ImageInfoService.class).delete(ia, imageOid,businessOid));
+			message.push("oid", getService(ImageInfoService.class).delete(ia, imageOid));
 			message.push("msg", "删除成功");
 			message.push("code", 0);
 		}catch(Exception e){
@@ -187,6 +197,12 @@ public class ImageInfoAction extends ManageAction {
 		}
 		return message;
 	}
+	@DocumentMeta(
+		method=@DocumentMethodMeta(title="图片详情",description="根据图片oid获取图片信息"),
+		params={
+			@DocumentParamMeta(name="imageOid",description="图片oid",type=FieldType.STRING,length=20,notnull=true),
+		}
+	)
 	public JSONMessage imageInfo(){
 		JSONMessage message=new JSONMessage();
 		try{
@@ -225,6 +241,17 @@ public class ImageInfoAction extends ManageAction {
 	 * 上传图片
 	 * @return
 	 */
+	@DocumentMeta(
+		method=@DocumentMethodMeta(title="上传业务图片",description="根据业务oid上传图片",permission=true,
+			result="无法调试, 调用接口需要传输文件流."),
+		params={
+			@DocumentParamMeta(name="adminToken",description="token",type=FieldType.STRING,length=20),
+			@DocumentParamMeta(name="businessOid",description="业务主键",type=FieldType.STRING,length=20,notnull=true),
+			@DocumentParamMeta(name="imageType",description="图片类型",type=FieldType.STRING,length=20,notnull=true),
+			@DocumentParamMeta(name="thumRatio",description="缩略图比例",type=FieldType.DOUBLE),
+			@DocumentParamMeta(name="thumWidth",description="缩略图宽",type=FieldType.DOUBLE),
+		}
+	)
 	public JSONMessage uploadBusinessImage(){
 		JSONMessage message=new JSONMessage();
 		try {
@@ -239,6 +266,7 @@ public class ImageInfoAction extends ManageAction {
 			}
 			if(StringUtil.isSpace(businessOid)) throw new MException(this.getClass(),"业务主键为空!");
 			Map<String,File> map=super.getFileMap();
+			if(null==map||map.size()<1) throw new MException(this.getClass(),"没有接收到图片");
 			for(String key : map.keySet()){
 				model.setOid("");
 				model.setImageType(imageType);
@@ -264,6 +292,14 @@ public class ImageInfoAction extends ManageAction {
 	 * 删除图片方法 业务列表
 	 * @return
 	 */
+	@DocumentMeta(
+		method=@DocumentMethodMeta(title="删除业务图片",description="删除根据业务oid上传的图片",permission=true),
+		params={
+			@DocumentParamMeta(name="adminToken",description="token",type=FieldType.STRING,length=20),
+			@DocumentParamMeta(name="imageOid",description="图片oid",type=FieldType.STRING,length=20,notnull=true),
+			@DocumentParamMeta(name="businessOid",description="业务oid",type=FieldType.STRING,length=20,notnull=true),
+		}
+	)
 	public JSONMessage deleteBusinessImage(){
 		JSONMessage message=new JSONMessage();
 		try{
@@ -307,6 +343,15 @@ public class ImageInfoAction extends ManageAction {
 	 * @throws SQLException
 	 * @throws MException
 	 */
+	@DocumentMeta(
+		method=@DocumentMethodMeta(title="业务图片列表",description="根据业务oid获取所有关联的图片"),
+		params={
+			@DocumentParamMeta(name="businessOid",description="业务oid",type=FieldType.STRING,length=20,notnull=true),
+			@DocumentParamMeta(name="imageType",description="图片类型",type=FieldType.STRING,length=20,notnull=true),
+			@DocumentParamMeta(name="page.index",description="分页开始位置",type=FieldType.INT),
+			@DocumentParamMeta(name="page.num",description="分页每页数量",type=FieldType.INT),
+		}
+	)
 	public JSONMessage businessImageList() throws SQLException, MException{
 		JSONMessage message=new JSONMessage();
 		try{

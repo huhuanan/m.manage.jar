@@ -262,12 +262,17 @@ public class ImageInfoService extends Service {
 	 * @return
 	 * @throws Exception
 	 */
-	public String delete(ImageAdmin admin, String imageOid, String businessOid) throws Exception {
+	public String delete(ImageAdmin admin, String imageOid) throws Exception {
+		return delete(admin,imageOid,null,null);
+	}
+	private String delete(ImageAdmin admin, String imageOid, String businessOid,String business) throws Exception {
 		ImageInfo ii=new ImageInfo();
 		ii.setOid(imageOid);
 		ii=ModelQueryUtil.getModel(ii);
 		if(ii.getImageAdmin().getOid().equals(admin.getOid())){
-			if(!StringUtil.isSpace(businessOid)) ImageLinkService.removeImageLink(businessOid, imageOid);
+			if(!StringUtil.isSpace(businessOid)&&StringUtil.noSpace(business).equals("图片列表")) {
+				ImageLinkService.removeImageLink(businessOid, imageOid);
+			}
 			if(ImageLinkService.hasImageLink(imageOid)){
 				throw new MException(this.getClass(),"已被使用的图片不能删除");
 			}
@@ -290,6 +295,6 @@ public class ImageInfoService extends Service {
 	 * @throws Exception
 	 */
 	public String deleteBusiness(ImageAdmin admin, String imageOid,String businessOid) throws Exception{
-		return delete(admin,imageOid,businessOid);
+		return delete(admin,imageOid,businessOid,"图片列表");
 	}
 }

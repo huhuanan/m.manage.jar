@@ -55,7 +55,7 @@ public class AdminLoginAction extends StatusAction {
 	}
 	public JSONMessage isLogin(){
 		JSONMessage message=new JSONMessage();
-		message.push("codeVerify", CaptchaUtil.isMastVerify(getSessionCookie()));
+		message.push("codeVerify", CaptchaUtil.isMastVerify(getIpAddress()+getSessionCookie()));
 		try {
 			model=getSessionAdmin();
 			message.push("code", 0);
@@ -79,7 +79,7 @@ public class AdminLoginAction extends StatusAction {
         
         OutputStream os = response.getOutputStream();
         try {
-            ImageIO.write(CaptchaUtil.getImageCode(getSessionCookie(), os), "jpg", os);
+            ImageIO.write(CaptchaUtil.getImageCode(getIpAddress()+getSessionCookie(), os), "jpg", os);
         }catch(IOException e) {
         }finally{
             if (os != null) {
@@ -97,17 +97,17 @@ public class AdminLoginAction extends StatusAction {
 		setLogContent("登陆", "管理员登陆后台");
 		JSONMessage message=new JSONMessage();
 		try {
-			CaptchaUtil.verifyCaptcha(getSessionCookie(), imageCode);
+			CaptchaUtil.verifyCaptcha(getIpAddress()+getSessionCookie(), imageCode);
 			model=getService(AdminLoginService.class).loginVerification(model);
 			setSessionAdmin(model,autoLogin);
 			getDao(AdminLoginDao.class).updateLastInfo(model, getIpAddress());
 			message.push("code", 0);
 			message.push("model", model);
 			message.push("msg", "登录成功!");
-			CaptchaUtil.clearMastVerify(getSessionCookie());
-			CaptchaUtil.clearCode(getSessionCookie());
+			CaptchaUtil.clearMastVerify(getIpAddress()+getSessionCookie());
+			CaptchaUtil.clearCode(getIpAddress()+getSessionCookie());
 		} catch (Exception e) {
-			CaptchaUtil.setMastVerify(getSessionCookie());
+			CaptchaUtil.setMastVerify(getIpAddress()+getSessionCookie());
 			message.push("code", 1);
 			message.push("msg", e.getMessage());
 			setLogError(e.getMessage());

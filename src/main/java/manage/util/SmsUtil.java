@@ -9,6 +9,7 @@ import com.github.qcloudsms.SmsSingleSender;
 import com.github.qcloudsms.SmsSingleSenderResult;
 
 import m.system.RuntimeData;
+import m.system.cache.CacheUtil;
 import m.system.exception.MException;
 import m.system.json.JsonReader;
 import m.system.util.StringUtil;
@@ -37,8 +38,6 @@ public class SmsUtil {
 		}
 		return sender;
 	}
-	private static Map<String,String> verifyMap=new HashMap<String,String>();
-	private static Map<String,Long> ipLongMap=new HashMap<String,Long>();
 	/**
 	 * 发送验证短信
 	 * @param phone
@@ -47,7 +46,7 @@ public class SmsUtil {
 	 */
 	public static String sendVerify(String phone,String ip) throws MException, Exception{
 		if(!StringUtil.isMobileNO(phone)) throw new MException(SmsUtil.class,"手机号错误");
-		Long num=ipLongMap.get(ip);
+		Long num=(Long) CacheUtil.get("verifyPhone_"+ip);
 		if(null!=num&&new Date().getTime()-num<60000){
 			throw new MException(SmsUtil.class,"获取验证码太快了!");
 		}
@@ -55,8 +54,8 @@ public class SmsUtil {
         String code=String.valueOf(ne.nextInt(99999-10000+1)+10000);
 		SystemInfo sys=getSystemInfo();
 		if(sys.getSmsDebug().equals("Y")){
-			verifyMap.put(phone, code);
-			ipLongMap.put(ip, new Date().getTime());
+			CacheUtil.push("verifyPhone_"+phone, code);
+			CacheUtil.push("verifyPhone_"+ip, new Date().getTime());
 			return code;
 		}else{
 			SmsSingleSender sender=getSender(sys);
@@ -65,9 +64,9 @@ public class SmsUtil {
 			JsonReader json=new JsonReader(result.toString());
 			if(RuntimeData.getDebug()) System.out.print(result);
 			if(json.get(Integer.class,"result")==0){
-	        System.out.println(code);
-				verifyMap.put(phone, code);
-				ipLongMap.put(ip, new Date().getTime());
+				System.out.println(code);
+	        	CacheUtil.push("verifyPhone_"+phone, code);
+	        	CacheUtil.push("verifyPhone_"+ip, new Date().getTime());
 			}else{
 				throw new MException(SmsUtil.class,json.get(String.class,"errmsg"));
 			}
@@ -79,7 +78,7 @@ public class SmsUtil {
 	 * @param phone
 	 */
 	public static void clearVerify(String phone){
-		verifyMap.remove(phone);
+		CacheUtil.clear("verifyPhone_"+phone);
 	}
 	/**
 	 * 验证短信验证码
@@ -88,7 +87,7 @@ public class SmsUtil {
 	 * @throws MException
 	 */
 	public static void checkVerify(String phone,String code) throws MException{
-		String tt=verifyMap.get(phone);
+		String tt=(String) CacheUtil.get("verifyPhone_"+phone);
 		if(null==tt){
 			throw new MException(SmsUtil.class,"请先发送验证短信");
 		}else if(tt.equals(code)){

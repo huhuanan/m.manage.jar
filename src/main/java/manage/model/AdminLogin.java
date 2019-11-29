@@ -14,7 +14,7 @@ import m.system.cache.FlushCache;
 @TableMeta(name="os_admin_login",description="管理员登录表")
 public class AdminLogin extends StatusModel implements UserModel,SessionModel,FlushCache {
 
-	@LinkTableMeta(name="admin_group_oid",table=AdminGroup.class,notnull=true,description="用户组")
+	@LinkTableMeta(name="admin_group_oid",table=AdminGroup.class,description="用户组")
 	private AdminGroup adminGroup;
 	@LinkTableMeta(name="head_image_oid",table=ImageInfo.class,description="头像")
 	private ImageInfo headImage;
