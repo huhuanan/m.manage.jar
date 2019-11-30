@@ -72,7 +72,28 @@ public abstract class ManageAction extends Action {
 	}
 	public static MException noLoginException=new MException(ManageAction.class, "NoLogin:未登录");
 	public static MException noPowerException=new MException(ManageAction.class, "NoPower:权限不足");
-	
+	/**
+	 * 填充结果
+	 * @param result
+	 * @param b true正常执行  false有异常
+	 * @param msg
+	 */
+	public void fillJSONResult(JSONMessage result,boolean b,String msg) {
+		if(b) {
+			result.push("code", 0);
+			result.push("msg", msg);
+		}else {
+			if(StringUtil.isSpace(msg)) {
+				result.push("code", 7);
+				result.push("msg", "数据异常");
+			}else{
+				result.push("code", 1);
+				result.push("msg", msg);
+			}
+			setLogError((String)result.get("msg"));
+			return;
+		}
+	}
 	@Override
 	public String getSessionLogin() {
 		return "_admin_login";
