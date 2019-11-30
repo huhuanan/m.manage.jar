@@ -47,12 +47,12 @@ public class SmsUtil {
 	public static String sendVerify(String phone,String ip) throws MException, Exception{
 		if(!StringUtil.isMobileNO(phone)) throw new MException(SmsUtil.class,"手机号错误");
 		Long num=(Long) CacheUtil.get("verifyPhone_"+ip);
-		if(null!=num&&new Date().getTime()-num<60000){
+		SystemInfo sys=getSystemInfo();
+		if((!sys.getSmsDebug().equals("Y"))&&null!=num&&new Date().getTime()-num<60000){
 			throw new MException(SmsUtil.class,"获取验证码太快了!");
 		}
 		Random ne=new Random();
         String code=String.valueOf(ne.nextInt(99999-10000+1)+10000);
-		SystemInfo sys=getSystemInfo();
 		if(sys.getSmsDebug().equals("Y")){
 			CacheUtil.push("verifyPhone_"+phone, code);
 			CacheUtil.push("verifyPhone_"+ip, new Date().getTime());
