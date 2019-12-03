@@ -13,6 +13,8 @@ public class AdminGroup extends StatusModel {
 	private String description;
 	@FieldMeta(name="type",type=FieldType.STRING,length=1,defaultValue="A",description="类型|A:组,B:角色")
 	private String type;
+	@FieldMeta(name="business",type=FieldType.STRING,length=1,defaultValue="A",description="类型|A系统,B:业务")
+	private String business;
 	@FieldMeta(name="sort",type=FieldType.INT,description="排序")
 	private Integer sort;
 	public Integer getSort() {
@@ -23,6 +25,12 @@ public class AdminGroup extends StatusModel {
 	}
 	public void setType(String type) {
 		this.type = type;
+	}
+	public String getBusiness() {
+		return business;
+	}
+	public void setBusiness(String business) {
+		this.business = business;
 	}
 	public void setSort(Integer sort) {
 		this.sort = sort;

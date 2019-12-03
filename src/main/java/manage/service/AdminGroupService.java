@@ -24,7 +24,7 @@ public class AdminGroupService extends Service {
 			ModelUpdateUtil.insertModel(model);
 			return "保存成功";
 		}else{
-			ModelUpdateUtil.updateModel(model, new String[]{"name","description","sort"});
+			ModelUpdateUtil.updateModel(model, new String[]{"name","business","description","sort"});
 			return "修改成功";
 		}
 	}

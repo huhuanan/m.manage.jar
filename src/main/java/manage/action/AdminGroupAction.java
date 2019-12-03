@@ -23,10 +23,12 @@ import manage.util.page.form.FormFieldMeta.FormFieldType;
 import manage.util.page.form.FormRowMeta;
 import manage.util.page.query.QueryMeta;
 import manage.util.page.query.QueryMeta.QueryType;
+import manage.util.page.query.SelectDataMeta;
 import manage.util.page.table.ActionTableColMeta;
 import manage.util.page.table.ActionTableColMeta.TableColSort;
 import manage.util.page.table.ActionTableColMeta.TableColType;
 import manage.util.page.table.ActionTableMeta;
+import manage.util.page.table.TableColData;
 
 @ActionMeta(name="manageAdminGroup")
 public class AdminGroupAction extends StatusAction {
@@ -80,7 +82,11 @@ public class AdminGroupAction extends StatusAction {
 				@FormFieldMeta(title="名称",field="model.name",type=FormFieldType.TEXT,hint="请输入名称",span=16),
 				@FormFieldMeta(title="排序",titleWidth=80,field="model.sort",type=FormFieldType.INT,hint="请输入排序",span=8)
 			}),
-			@FormRowMeta(fields={@FormFieldMeta(title="描述", field = "model.description", type = FormFieldType.TEXTAREA,rows=5,hint="请输入描述")})
+			@FormRowMeta(fields={@FormFieldMeta(title="描述", field = "model.description", type = FormFieldType.TEXTAREA,rows=5,hint="请输入描述")}),
+			@FormRowMeta(fields={
+				@FormFieldMeta(title="类型", field = "model.business", type = FormFieldType.RADIO,
+					querySelectDatas= {@SelectDataMeta(value="A",title="系统"),@SelectDataMeta(value="B",title="业务")})
+			})
 		},
 		buttons={
 			@FormButtonMeta(title = "保存", url = "action/manageAdminGroup/doSave",success=FormSuccessMethod.DONE_BACK)
@@ -102,6 +108,8 @@ public class AdminGroupAction extends StatusAction {
 		cols = { 
 			@ActionTableColMeta(field = "oid", title = "",type=TableColType.INDEX),
 			@ActionTableColMeta(field = "name", title = "名称", width=130,sort=true,initSort=TableColSort.DESC),
+			@ActionTableColMeta(field = "business", title = "类型", width=100,
+			colDatas= {@TableColData(value="A",title="系统"),@TableColData(value="B",title="业务")}),
 			@ActionTableColMeta(field = "description", title = "描述", width=200),
 			@ActionTableColMeta(field = "sort", title = "排序", width=100,align="left"),
 			@ActionTableColMeta(field = "status", title = "状态",type=TableColType.STATUS,power="manage_system_power",dictionaryType="status",align="center"),
@@ -158,7 +166,11 @@ public class AdminGroupAction extends StatusAction {
 				@FormFieldMeta(title="名称",field="model.name",type=FormFieldType.TEXT,hint="请输入名称",span=16),
 				@FormFieldMeta(title="排序",titleWidth=80,field="model.sort",type=FormFieldType.INT,hint="请输入排序",span=8)
 			}),
-			@FormRowMeta(fields={@FormFieldMeta(title="描述", field = "model.description", type = FormFieldType.TEXTAREA,rows=5,hint="请输入描述")})
+			@FormRowMeta(fields={@FormFieldMeta(title="描述", field = "model.description", type = FormFieldType.TEXTAREA,rows=5,hint="请输入描述")}),
+			@FormRowMeta(fields={
+				@FormFieldMeta(title="类型", field = "model.business", type = FormFieldType.RADIO,
+					querySelectDatas= {@SelectDataMeta(value="A",title="系统"),@SelectDataMeta(value="B",title="业务")})
+			})
 		},
 		buttons={
 			@FormButtonMeta(title = "保存", url = "action/manageAdminGroup/doSave",success=FormSuccessMethod.DONE_BACK)
@@ -180,6 +192,8 @@ public class AdminGroupAction extends StatusAction {
 		cols = { 
 			@ActionTableColMeta(field = "oid", title = "",type=TableColType.INDEX),
 			@ActionTableColMeta(field = "name", title = "名称", width=130,sort=true,initSort=TableColSort.DESC),
+			@ActionTableColMeta(field = "business", title = "类型", width=100,
+			colDatas= {@TableColData(value="A",title="系统"),@TableColData(value="B",title="业务")}),
 			@ActionTableColMeta(field = "description", title = "描述", width=200),
 			@ActionTableColMeta(field = "sort", title = "排序", width=100,align="left"),
 			@ActionTableColMeta(field = "status", title = "状态",type=TableColType.STATUS,power="manage_system_power",dictionaryType="status",align="center"),
