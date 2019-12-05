@@ -79,5 +79,5 @@ public @interface TableColLink {
 	 * 操作为modal时, modal的宽
 	 * @return
 	 */
-	int modalWidth() default 750;
+	int modalWidth() default 900;
 }

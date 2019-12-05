@@ -134,6 +134,17 @@ public class DictionaryUtil {
 		}
 		return list;
 	}
+	public static Map<String,String> getNameMap(String dictType){
+		init();
+		Map<String,String> names=new HashMap<String, String>();
+		Map<String,DictionaryData> dd=map.get(dictType);
+		if(null!=dd){
+			for(String key : dd.keySet()){
+				names.put(key,dd.get(key).getName());
+			}
+		}
+		return names;
+	}
 	
 	
 	
