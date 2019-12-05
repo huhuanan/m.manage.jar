@@ -212,10 +212,11 @@ public abstract class ManageAction extends Action {
 	 * @param power 在module.xml配置文件中配置
 	 * @throws Exception 
 	 */
-	public void verifyAdminOperPower(String power) throws Exception{
-		Map<String,Boolean> adminGroupPowerMap=getAdminOperPower();
+	public AdminLogin verifyAdminOperPower(String power) throws Exception{
+		AdminLogin login=verifyAdminLogin();
+		Map<String,Boolean> adminGroupPowerMap=getAdminOperPower(login);
 		if(null!=adminGroupPowerMap.get(power)&&adminGroupPowerMap.get(power)){
-			
+			return login;
 		}else{
 			throw noPowerException;
 		}
