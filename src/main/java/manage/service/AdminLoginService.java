@@ -55,8 +55,8 @@ public class AdminLoginService extends Service {
 				if("9".equals(model.getStatus())){
 					throw new MException(this.getClass(),"账号已被停用!");
 				}
-				model.setToken(UUID.randomUUID().toString());
-				ModelUpdateUtil.updateModel(model,new String[]{"token"});
+				//model.setToken(UUID.randomUUID().toString());
+				//ModelUpdateUtil.updateModel(model,new String[]{"token"});
 				return model;
 			}
 		}
