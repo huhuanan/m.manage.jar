@@ -35,8 +35,7 @@ public class DictionaryUtil {
 				List<DictionaryType> list=ModelQueryList.getModelList(DictionaryType.class, 
 					new String[]{"oid","type"}, 
 					null, 
-					null,
-					QueryOrder.asc("sort")
+					null
 				);
 				for(DictionaryType dt : list){
 					Map<String,DictionaryData> dmap=new LinkedHashMap<String, DictionaryData>();
