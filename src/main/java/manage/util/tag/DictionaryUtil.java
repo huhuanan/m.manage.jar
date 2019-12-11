@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import m.common.model.util.ModelQueryList;
+import m.common.model.util.QueryOrder;
 import m.system.cache.CacheUtil;
 import m.system.util.ArrayUtil;
 import manage.model.DictionaryData;
@@ -34,7 +35,8 @@ public class DictionaryUtil {
 				List<DictionaryType> list=ModelQueryList.getModelList(DictionaryType.class, 
 					new String[]{"oid","type"}, 
 					null, 
-					null
+					null,
+					QueryOrder.asc("sort")
 				);
 				for(DictionaryType dt : list){
 					Map<String,DictionaryData> dmap=new LinkedHashMap<String, DictionaryData>();
