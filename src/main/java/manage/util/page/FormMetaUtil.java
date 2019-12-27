@@ -179,6 +179,10 @@ public class FormMetaUtil {
 				map.put("style", button.style().toString());
 				map.put("operField", button.operField());
 				map.put("operValues", button.operValues());
+				map.put("showField", button.showField());
+				map.put("showValues", button.showValues());
+				map.put("hiddenField", button.hiddenField());
+				map.put("hiddenValues", button.hiddenValues());
 				JSONMessage json=new JSONMessage();
 				json.push("confirm", button.confirm());
 				json.push("url", button.url());

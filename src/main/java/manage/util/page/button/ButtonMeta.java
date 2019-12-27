@@ -83,6 +83,16 @@ public @interface ButtonMeta {
 	 */
 	ParamMeta[] queryParams() default{};
 	/** INLINE 可用
+	 * 判断操作的字段 不设置就代表不判断
+	 * @return
+	 */
+	String operField() default "";
+	/** INLINE 可用
+	 * 判断操作的值,多个用逗号分开
+	 * @return
+	 */
+	String operValues() default "";
+	/** INLINE 可用
 	 * 判断隐藏的字段
 	 * @return
 	 */

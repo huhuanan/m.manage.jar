@@ -93,4 +93,24 @@ public @interface FormButtonMeta {
 	 * @return
 	 */
 	String operValues() default "";
+	/**
+	 * 判断隐藏的字段
+	 * @return
+	 */
+	String hiddenField() default "";
+	/**
+	 * 判断隐藏的值,多个用逗号分开
+	 * @return
+	 */
+	String hiddenValues() default "";
+	/**
+	 * 判断显示的字段
+	 * @return
+	 */
+	String showField() default "";
+	/**
+	 * 判断显示的值,多个用逗号分开
+	 * @return
+	 */
+	String showValues() default "";
 }

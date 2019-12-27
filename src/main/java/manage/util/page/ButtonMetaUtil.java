@@ -43,6 +43,8 @@ public class ButtonMetaUtil {
 				button.put("title", bm.title());
 				button.put("icon", getIcon(bm.title(),bm.icon()));
 				button.put("style", bm.style().toString());
+				button.put("operField", bm.operField().replaceAll("\\.", "_"));
+				button.put("operValues", bm.operValues());
 				button.put("hiddenField", bm.hiddenField().replaceAll("\\.", "_"));
 				button.put("hiddenValues", bm.hiddenValues());
 				button.put("showField", bm.showField().replaceAll("\\.", "_"));
