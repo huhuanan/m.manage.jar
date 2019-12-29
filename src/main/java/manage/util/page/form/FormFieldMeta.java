@@ -16,6 +16,8 @@ import manage.util.page.query.SelectDataMeta;
 public @interface FormFieldMeta {
 	public enum FormFieldType {
 		HIDDEN,//隐藏域
+		LABEL,//文本
+		HTML,//html
 		ALERT,//提示框
 		TEXT,//普通输入框
 		TEXTAUTO,//自动填充输入框
@@ -124,26 +126,26 @@ public @interface FormFieldMeta {
 	 * @return
 	 */
 	String suffix() default "";
-	/** SELECT CHECKBOX RADIO STEPS
+	/** SELECT CHECKBOX RADIO STEPS LABEL
 	 * select的查询  优先
 	 * @return
 	 */
 	QuerySelectMeta querySelect() default @QuerySelectMeta(modelClass = "", title = "", value = "");
-	/** SELECT CHECKBOX RADIO STEPS
+	/** SELECT CHECKBOX RADIO STEPS LABEL
 	 * 字典类型 其次
 	 * @return
 	 */
 	String dictType() default "";
-	/** SELECT CHECKBOX RADIO STEPS
+	/** SELECT CHECKBOX RADIO STEPS LABEL
 	 * select的数据  最终
 	 * @return
 	 */
 	SelectDataMeta[] querySelectDatas() default {};
-	/** DATE
+	/** DATE DATETIME LABEL
 	 * 时间格式
 	 * @return
 	 */
-	String dateFormat() default "yyyy-MM-dd";
+	String dateFormat() default "";
 	/** DOUBLE
 	 * double 小数位数
 	 * @return
@@ -159,7 +161,7 @@ public @interface FormFieldMeta {
 	 * @return
 	 */
 	String clearField() default "";
-	/** 只有 SELECT CHECKBOX RADIO STEPS 支持
+	/** 只有 SELECT CHECKBOX RADIO STEPS LABEL 支持
 	 * 其他字段填充,用其他字段结合起来填充
 	 * @return
 	 */
@@ -219,4 +221,11 @@ public @interface FormFieldMeta {
 	 * @return
 	 */
 	FormButtonMeta[] buttons() default {};
+	/**
+	 * 只有 HTML
+	 * viewui html
+	 * @return
+	 */
+	String html() default "";
+	
 }

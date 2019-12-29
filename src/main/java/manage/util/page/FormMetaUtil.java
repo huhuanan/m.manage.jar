@@ -84,6 +84,9 @@ public class FormMetaUtil {
 				if(((List<String>)vui[0]).size()>0) {
 					m.put("viewuiSpan", field.viewuiSpan()==0?field.span():field.viewuiSpan());
 				}
+				if(field.type()==FormFieldType.HTML) {
+					m.put("html", convertHTMLParams(field.html()));
+				}
 				if(field.type()==FormFieldType.ALERT) {
 					m.put("title", "");
 					m.put("titleWidth", 0);
@@ -109,7 +112,7 @@ public class FormMetaUtil {
 				m.put("clearField", field.clearField());
 				m.put("thumWidth", field.thumWidth());
 				m.put("thumRatio", field.thumRatio());
-				if(field.type()==FormFieldType.DATE||field.type()==FormFieldType.DATETIME){
+				if(field.type()==FormFieldType.LABEL||field.type()==FormFieldType.DATE||field.type()==FormFieldType.DATETIME){
 					m.put("dateFormat", field.dateFormat());
 				}
 				if(field.type()==FormFieldType.DOUBLE||field.type()==FormFieldType.INT){
@@ -127,7 +130,7 @@ public class FormMetaUtil {
 					}catch(Exception e){
 					}
 				}
-				if(field.type()==FormFieldType.SELECT||field.type()==FormFieldType.SELECT_NODE||field.type()==FormFieldType.CHECKBOX||field.type()==FormFieldType.RADIO||field.type()==FormFieldType.STEPS||field.type()==FormFieldType.TEXTAUTO){
+				if(field.type()==FormFieldType.LABEL||field.type()==FormFieldType.SELECT||field.type()==FormFieldType.SELECT_NODE||field.type()==FormFieldType.CHECKBOX||field.type()==FormFieldType.RADIO||field.type()==FormFieldType.STEPS||field.type()==FormFieldType.TEXTAUTO){
 					if(!StringUtil.isSpace(field.querySelect().modelClass())||!StringUtil.isSpace(field.dictType())){
 						m.put("selectData", new ArrayList<Map<String,Object>>());
 						JSONMessage json=QueryMetaUtil.toSelectParam(field.type().name(),field.querySelect(),field.dictType(),field.linkField());
@@ -224,18 +227,20 @@ public class FormMetaUtil {
 		}
 		return list;
 	}
-	public static Object[] toViewUI(FormViewUIMeta[] viewui){
+	private static String convertHTMLParams(String html) {
 		Pattern pattern=Pattern.compile("\\#\\{.+?\\}");
+		Matcher matcher=pattern.matcher(html);
+		while(matcher.find()){
+			String str=matcher.group();
+			html=html.replace(str, "fields['"+str.substring(2,str.length()-1)+"']");
+		}
+		return html;
+	}
+	public static Object[] toViewUI(FormViewUIMeta[] viewui){
 		List<String> vulist=new ArrayList<String>();
 		List<String> vplist=new ArrayList<String>();
 		for(FormViewUIMeta ui : viewui) {
-			String f=ui.template();
-			Matcher matcher=pattern.matcher(f);
-			while(matcher.find()){
-				String str=matcher.group();
-				f=f.replace(str, "fields['"+str.substring(2,str.length()-1)+"']");
-			}
-			vulist.add(f);
+			vulist.add(convertHTMLParams(ui.template()));
 			for(String p : ui.fields()) {
 				vplist.add(p);
 			}
