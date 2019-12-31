@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Documented//说明该注解将被包含在javadoc中 
 public @interface ActionFormMeta {
 	/**
-	 * 标题
+	 * 标题 支持参数#{model.oid}
 	 * @return
 	 */
 	String title() default "";
