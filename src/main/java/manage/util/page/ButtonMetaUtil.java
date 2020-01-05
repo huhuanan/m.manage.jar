@@ -7,6 +7,7 @@ import java.util.Map;
 
 import m.system.util.JSONMessage;
 import m.system.util.StringUtil;
+import manage.service.AdminGroupPowerService;
 import manage.util.page.button.ButtonMeta;
 import manage.util.page.button.ButtonMeta.ButtonEvent;
 import manage.util.page.button.DropButtonMeta;
@@ -38,7 +39,7 @@ public class ButtonMetaUtil {
 	public List<Map<String,Object>> toList(ButtonMeta[] bms,Map<String,Boolean> powerMap){
 		List<Map<String,Object>> buttons=new ArrayList<Map<String,Object>>();
 		for(ButtonMeta bm : bms){
-			if("".equals(bm.power())||null!=powerMap.get(bm.power())&&powerMap.get(bm.power())){
+			if(AdminGroupPowerService.hasPowerOrNull(powerMap, bm.power().split(","))){
 				Map<String,Object> button=new HashMap<String,Object>();
 				button.put("title", bm.title());
 				button.put("icon", getIcon(bm.title(),bm.icon()));
@@ -66,7 +67,7 @@ public class ButtonMetaUtil {
 		return buttons;
 	}
 	public Map<String,Object> toPamams(TableColLink bm,Map<String,Boolean> powerMap) {
-		if("".equals(bm.power())||null!=powerMap.get(bm.power())&&powerMap.get(bm.power())){
+		if(AdminGroupPowerService.hasPowerOrNull(powerMap, bm.power().split(","))){
 			Map<String,Object> link=new HashMap<String,Object>();
 			link.put("hiddenField", bm.hiddenField().replaceAll("\\.", "_"));
 			link.put("hiddenValues", bm.hiddenValues());
@@ -101,7 +102,7 @@ public class ButtonMetaUtil {
 	public List<Map<String,Object>> toList(DropButtonMeta[] bms,Map<String,Boolean> powerMap){
 		List<Map<String,Object>> dbs=new ArrayList<Map<String,Object>>();
 		for(DropButtonMeta bm : bms) {
-			if("".equals(bm.power())||null!=powerMap.get(bm.power())&&powerMap.get(bm.power())){
+			if(AdminGroupPowerService.hasPowerOrNull(powerMap, bm.power().split(","))){
 				Map<String,Object> button=new HashMap<String,Object>();
 				button.put("title", bm.title());
 				button.put("icon", getIcon(bm.title(),bm.icon()));

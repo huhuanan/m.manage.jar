@@ -30,6 +30,7 @@ import m.system.util.JSONMessage;
 import m.system.util.NumberUtil;
 import m.system.util.ObjectUtil;
 import m.system.util.StringUtil;
+import manage.service.AdminGroupPowerService;
 import manage.util.excel.SheetCell;
 import manage.util.excel.SheetObject;
 import manage.util.excel.SheetRow;
@@ -89,7 +90,7 @@ public class ActionTableUtil {
 		List<Map<String,Object>> cols=new ArrayList<Map<String,Object>>();
 		ButtonMetaUtil bmUtil=new ButtonMetaUtil();
 		for(ActionTableColMeta cm : cms){
-			if(StringUtil.isSpace(cm.power())||null!=powerMap.get(cm.power())&&powerMap.get(cm.power())){
+			if(AdminGroupPowerService.hasPowerOrNull(powerMap, cm.power().split(","))){
 				Map<String,Object> col=new HashMap<String,Object>();
 				col.put("key", getFieldName(cm));
 				col.put("field", cm.field());

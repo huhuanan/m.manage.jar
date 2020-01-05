@@ -22,6 +22,36 @@ import manage.run.ModuleInitRun;
 
 public class AdminGroupPowerService extends Service {
 	/**
+	 * 判断权限map里是否包含power
+	 * @param powerMap
+	 * @param power
+	 * @return
+	 */
+	public static boolean hasPower(Map<String,Boolean> powerMap,String... power) {
+		boolean flag=false;
+		for(String p : power) {
+			if(null!=powerMap.get(p)&&powerMap.get(p))
+				flag=true;
+		}
+		return flag;
+	}
+	/**
+	 * 判断权限map里是否包含power  如果power是空则返回true
+	 * @param powerMap
+	 * @param power
+	 * @return
+	 */
+	public static boolean hasPowerOrNull(Map<String,Boolean> powerMap,String... power) {
+		boolean flag=true;
+		for(String p : power) {
+			if(!StringUtil.isSpace(p)) {
+				flag=false;
+			}
+		}
+		if(!flag) return hasPower(powerMap, power);
+		return flag;
+	}
+	/**
 	 * 获取用户对应的权限
 	 * @param admin_oid
 	 * @return

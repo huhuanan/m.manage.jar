@@ -209,13 +209,13 @@ public abstract class ManageAction extends Action {
 	}
 	/**
 	 * 验证操作权限
-	 * @param power 在module.xml配置文件中配置
+	 * @param power 在module.xml配置文件中配置  如果传入多个, 有一个满足即可
 	 * @throws Exception 
 	 */
-	public AdminLogin verifyAdminOperPower(String power) throws Exception{
+	public AdminLogin verifyAdminOperPower(String... power) throws Exception{
 		AdminLogin login=verifyAdminLogin();
 		Map<String,Boolean> adminGroupPowerMap=getAdminOperPower(login);
-		if(null!=adminGroupPowerMap.get(power)&&adminGroupPowerMap.get(power)){
+		if(AdminGroupPowerService.hasPower(adminGroupPowerMap, power)){
 			return login;
 		}else{
 			throw noPowerException;

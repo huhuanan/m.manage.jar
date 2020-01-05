@@ -12,6 +12,7 @@ import m.system.exception.MException;
 import m.system.util.JSONMessage;
 import m.system.util.ObjectUtil;
 import m.system.util.StringUtil;
+import manage.service.AdminGroupPowerService;
 import manage.util.page.button.ParamMeta;
 import manage.util.page.form.FormButtonMeta;
 import manage.util.page.form.FormButtonMeta.FormButtonEvent;
@@ -175,7 +176,7 @@ public class FormMetaUtil {
 	public static List<Map<String,Object>> toButtons(FormButtonMeta[] buttons,Map<String,Boolean> powerMap) {
 		List<Map<String,Object>> list=new ArrayList<Map<String,Object>>();
 		for(FormButtonMeta button : buttons){
-			if("".equals(button.power())||null!=powerMap.get(button.power())){
+			if(AdminGroupPowerService.hasPowerOrNull(powerMap, button.power().split(","))){
 				Map<String,Object> map=new HashMap<String, Object>();
 				map.put("title", button.title());
 				map.put("icon", ButtonMetaUtil.getIcon(button.title(),button.icon()));

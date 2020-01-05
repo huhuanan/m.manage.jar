@@ -16,7 +16,7 @@ public abstract class StatusAction extends ManageAction{
 	public JSONMessage doRecovery(){
 		JSONMessage message=new JSONMessage();
 		try {
-			verifyAdminOperPower(getStatusPower());
+			verifyAdminOperPower(getStatusPower().split(","));
 			getService(StatusService.class).doRecovery(getModel());
 			doRecoveryCallback();
 			message.push("code", 0);
@@ -36,7 +36,7 @@ public abstract class StatusAction extends ManageAction{
 	public JSONMessage doDisable(){
 		JSONMessage message=new JSONMessage();
 		try {
-			verifyAdminOperPower(getStatusPower());
+			verifyAdminOperPower(getStatusPower().split(","));
 			getService(StatusService.class).doDisable(getModel());
 			doDisableCallback();
 			message.push("code", 0);

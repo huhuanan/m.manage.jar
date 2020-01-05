@@ -73,7 +73,7 @@ public @interface ButtonMeta {
 	 * @return
 	 */
 	String url();
-	/**
+	/** INLINE
 	 * 操作url的参数
 	 * @return
 	 */
