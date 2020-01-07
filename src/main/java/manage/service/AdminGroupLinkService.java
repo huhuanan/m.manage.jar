@@ -22,11 +22,13 @@ public class AdminGroupLinkService extends Service {
 		try {
 			tm.begin();
 			DBManager.executeUpdate("delete from os_admin_group_link where admin_group_oid=?",new String[] {adminGroupOid});
-			List<Object[]> list=new ArrayList<Object[]>();
-			for(String oid : adminOids) {
-				list.add(new Object[] {GenerateID.generatePrimaryKey(),adminGroupOid,oid});
+			if(null!=adminOids&&adminOids.length>0) {
+				List<Object[]> list=new ArrayList<Object[]>();
+				for(String oid : adminOids) {
+					list.add(new Object[] {GenerateID.generatePrimaryKey(),adminGroupOid,oid});
+				}
+				DBManager.batchUpdate("insert into os_admin_group_link(oid,admin_group_oid,admin_oid) value(?,?,?)", list);
 			}
-			DBManager.batchUpdate("insert into os_admin_group_link(oid,admin_group_oid,admin_oid) value(?,?,?)", list);
 			tm.commit();
 		}catch(Exception e) {
 			tm.rollback();
