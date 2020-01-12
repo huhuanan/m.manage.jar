@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jxl.format.Alignment;
 import jxl.write.WriteException;
@@ -48,7 +50,33 @@ import manage.util.page.table.TableExpandRow;
 import manage.util.tag.DictionaryUtil;
 
 public class ActionTableUtil {
-	
+	public static Integer[] getPageNums(boolean card,int num) {
+		if(card) {
+			if(num>5) {
+				return new Integer[] {2*num,3*num,5*num,8*num,12*num};
+			}else {
+				return new Integer[] {3*num,4*num,6*num,9*num,13*num};
+			}
+		}else {
+			return new Integer[] {10,20,30,40,50};
+		}
+	}
+	public static String toCardHtml(String html,ActionTableColMeta[] cms) {
+		Pattern pattern=Pattern.compile("\\#\\{slot:.+?\\}");
+		Matcher matcher=pattern.matcher(html);
+		while(matcher.find()){
+			String str=matcher.group();
+			String f=str.substring(7,str.length()-1);
+			int n=0;
+			for(int i=0;i<cms.length;i++) {
+				if(f.equals(cms[i].field())) {
+					n=i;break;
+				}
+			}
+			html=html.replace(str, "<field-row :col=\"columns["+n+"]\" :row=\"row\"></field-row>");
+		}
+		return html;
+	}
 	private static String getFieldName(ActionTableColMeta cm){
 		String field="";
 		if(!StringUtil.isSpace(cm.dictionaryType())){
@@ -111,29 +139,29 @@ public class ActionTableUtil {
 					col.put("render", new HtmlBodyContent(new StringBuffer("(h, params)=>{return this.imageRender(h,params,'").append(col.get("key")).append("');}").toString()));
 					col.put("type", TableColType.NORMAL);
 					col.put("width", 80);
-					col.put("align", "center");
+					col.put("align", StringUtil.isSpace(cm.align())?"center":cm.align());
 				}else if(cm.type()==TableColType.STATUS){
 					col.put("type", TableColType.NORMAL);
 					col.put("render", new HtmlBodyContent(new StringBuffer("(h, params)=>{return this.statusRender(h,params,'").append(cm.field()).append("');}").toString()));
 					col.put("width", 80);
-					col.put("align", "center");
+					col.put("align", StringUtil.isSpace(cm.align())?"center":cm.align());
 				}else if(cm.type()==TableColType.COLOR){
 					col.put("type", TableColType.NORMAL);
 					col.put("render", new HtmlBodyContent(new StringBuffer("(h, params)=>{return this.colorRender(h,params,'").append(cm.field()).append("');}").toString()));
 					col.put("width", 50);
-					col.put("align", "center");
+					col.put("align", StringUtil.isSpace(cm.align())?"center":cm.align());
 				}else if(cm.type()==TableColType.CHECKBOX||cm.type()==TableColType.INDEX){
 					col.put("type", cm.type());
 					col.put("width", 50);
-					col.put("fixed", "left");
-					col.put("align", "center");
+					col.put("fixed", StringUtil.isSpace(cm.fixed())?"left":cm.fixed());
+					col.put("align", StringUtil.isSpace(cm.align())?"center":cm.align());
 				}else{
 					col.put("render", new HtmlBodyContent(new StringBuffer("(h, params)=>{return this.colRender(h,params,'").append(col.get("key")).append("');}").toString()));
 					col.put("type", cm.type());
 					List<Map<String,Object>> btnList=bmUtil.toList(cm.buttons(), powerMap);
 					List<Map<String,Object>> dropBtnList=bmUtil.toList(cm.dropButtons(), powerMap);
 					if(btnList.size()>0||dropBtnList.size()>0){
-						col.put("align", "center");
+						col.put("align", StringUtil.isSpace(cm.align())?"center":cm.align());
 						col.put("buttons",btnList);
 						col.put("dropButtons", dropBtnList);
 					}

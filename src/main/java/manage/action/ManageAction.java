@@ -439,6 +439,10 @@ public abstract class ManageAction extends Action {
 		}else if(!QueryMetaUtil.hasNoHiddenQuery(meta.querys())){
 			map.put("hiddenQueryList", true);
 		}
+		map.put("cardMode", meta.cardMode());
+		map.put("cardColNum", meta.cardColNum());
+		map.put("cardHtml", ActionTableUtil.toCardHtml(meta.cardHtml(),meta.cols()));
+		map.put("pageNums", ObjectUtil.toString(ActionTableUtil.getPageNums(meta.cardMode(), meta.cardColNum())));
 		Map<String,Boolean> powerMap=getAdminOperPower();
 		map.put("expandRow", ActionTableUtil.toExpandMap(meta.expandRow()));
 		List<Map<String,Object>> colList=ActionTableUtil.toList(meta.cols(),powerMap);

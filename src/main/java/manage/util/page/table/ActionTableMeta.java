@@ -82,6 +82,21 @@ public @interface ActionTableMeta {
 	 */
 	String[] orders() default {};
 	/**
+	 * 每条数据已card样式展示
+	 * @return
+	 */
+	boolean cardMode() default false;
+	/**
+	 * card列数
+	 * @return
+	 */
+	int cardColNum() default 5;
+	/**
+	 * card的html代码   支持参数 {{row['列field字段']}} row是当前行  支持插槽 #{slot:列field字段}
+	 * @return
+	 */
+	String cardHtml() default "";
+	/**
 	 * 列描述
 	 * @return
 	 */
