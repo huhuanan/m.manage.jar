@@ -25,7 +25,9 @@ import manage.model.ModuleInfo;
 public class ModuleInitRun extends SystemInitRun {
 	public void init() {
 		RuntimeData.addActionPack("manage.action");
+		//RuntimeData.addActionPack("manage.flow.action");//流程相关,暂时不启用
 		RuntimeData.addModelPack("manage.model");
+		//RuntimeData.addModelPack("manage.flow.model");//流程相关,暂时不启用
 		RuntimeData.addStaticField(new String[] {"ImageInfo.imgPath","ImageInfo.thumPath"});
 		RuntimeData.addSecretField(new String[] {"AdminLogin.password","AdminLogin.token"});
 	}
