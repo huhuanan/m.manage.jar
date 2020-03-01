@@ -23,6 +23,8 @@ public class FlowDefine extends Model {
 
 	@LinkTableMeta(name="start_section_oid",table=FlowSection.class,description="开始环节")
 	private FlowSection startSection;
+	@FieldMeta(name="start_option",type=FieldType.STRING,length=2,description="开始选项|AU申请人,AO申请部门,MU多选用户,MO多选部门,OU单选用户,OO单选部门")
+	private String startOption;
 	@FieldMeta(name="issue_status",type=FieldType.STRING,length=1,description="是否发布|C草稿,Y已发布,N历史")
 	private String issueStatus;
 	@FieldMeta(name="issue_date",type=FieldType.DATE,description="发布时间")
@@ -82,6 +84,14 @@ public class FlowDefine extends Model {
 
 	public void setStartSection(FlowSection startSection) {
 		this.startSection = startSection;
+	}
+
+	public String getStartOption() {
+		return startOption;
+	}
+
+	public void setStartOption(String startOption) {
+		this.startOption = startOption;
 	}
 	
 }

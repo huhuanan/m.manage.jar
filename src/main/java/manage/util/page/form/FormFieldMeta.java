@@ -38,7 +38,9 @@ public @interface FormFieldMeta {
 		EDITER,//富文本编辑器
 		COLOR,//颜色
 		MAP,//地图坐标
-		BUTTON//按钮
+		BUTTON,//按钮
+		SELECT_PAGE,//选择页面 设置html展示属性值
+		//selectPageUrl=page/manage/pageUtil/selectOneAdmin.html  field类型：List<manage.model.AdminLogin>
 	}
 	/**
 	 * 标题
@@ -222,10 +224,29 @@ public @interface FormFieldMeta {
 	 */
 	FormButtonMeta[] buttons() default {};
 	/**
-	 * 只有 HTML
-	 * viewui html
+	 * 只有 HTML SELECT_PAGE
+	 * viewui html  支持参数#{属性}
 	 * @return
 	 */
 	String html() default "";
-	
+	/**
+	 * 支持参数#{属性}
+	 * @return
+	 */
+	String showExpression() default "1==1";
+	/** 只有SELECT_PAGE
+	 * 选择页面 优先
+	 * @return
+	 */
+	String selectPageUrl() default "";
+	/** 只有SELECT_PAGE
+	 * 选择页面 selectPageUrl为空则使用selectPageUrlExpression
+	 * @return
+	 */
+	String selectPageUrlExpression() default "''";
+	/** 只有SELECT_PAGE
+	 * 选择页面的宽度
+	 * @return
+	 */
+	int selectPageWidth() default 600;
 }

@@ -1,36 +1,18 @@
 package manage.flow.action;
 
 import m.common.action.ActionMeta;
-import m.common.action.ActionResult;
-import m.common.model.util.ModelCheckUtil;
-import m.common.model.util.ModelQueryUtil;
-import m.common.model.util.QueryCondition;
 import m.system.RuntimeData;
-import m.system.exception.MException;
 import m.system.util.JSONMessage;
-import m.system.util.StringUtil;
 import manage.action.ManageAction;
 import manage.flow.model.FlowInstance;
 import manage.flow.service.FlowInstanceService;
-import manage.flow.service.FlowSectionService;
 import manage.util.page.button.ButtonMeta;
 import manage.util.page.button.ButtonMeta.ButtonEvent;
 import manage.util.page.button.ButtonMeta.ButtonStyle;
 import manage.util.page.button.ButtonMeta.SuccessMethod;
 import manage.util.page.button.ParamMeta;
-import manage.util.page.form.ActionFormMeta;
-import manage.util.page.form.FormAlertMeta;
-import manage.util.page.form.FormButtonMeta;
-import manage.util.page.form.FormButtonMeta.FormButtonEvent;
-import manage.util.page.form.FormButtonMeta.FormSuccessMethod;
-import manage.util.page.form.FormFieldMeta;
-import manage.util.page.form.FormFieldMeta.FormFieldType;
-import manage.util.page.form.FormOtherMeta;
-import manage.util.page.form.FormRowMeta;
-import manage.util.page.query.LinkFieldMeta;
 import manage.util.page.query.QueryMeta;
 import manage.util.page.query.QueryMeta.QueryType;
-import manage.util.page.query.QuerySelectMeta;
 import manage.util.page.query.SelectDataMeta;
 import manage.util.page.table.ActionTableColMeta;
 import manage.util.page.table.ActionTableColMeta.TableColType;
@@ -41,6 +23,20 @@ import manage.util.page.table.TableColLink;
 @ActionMeta(name="manageFlowInstance")
 public class FlowInstanceAction extends ManageAction {
 	private FlowInstance model;
+	
+	public JSONMessage getInstance() {
+		setLogContent("获取", "获取流程实例");
+		JSONMessage result=new JSONMessage();
+		try {
+			verifyAdminOperPower("manage_flow_power");
+			result=getService(FlowInstanceService.class).getInstance(model);
+			fillJSONResult(result,true,"");
+		} catch (Exception e) {
+			fillJSONResult(result,false,e.getMessage());
+			if(RuntimeData.getDebug()) e.printStackTrace();
+		}
+		return result;
+	}
 
 	@ActionTableMeta(dataUrl = "action/manageFlowInstance/flowInstanceData",
 			modelClass="manage.flow.model.FlowInstance",
@@ -61,8 +57,8 @@ public class FlowInstanceAction extends ManageAction {
 			@ActionTableColMeta(field = "doneDate", title = "完成时间", width=100,dateFormat="yyyy-MM-dd"),
 			@ActionTableColMeta(field = "oid",title="操作",width=130,align="center",buttons={
 				@ButtonMeta(title="执行情况", event = ButtonEvent.MODAL,modalWidth=650, url = "action/manageFlowInstance/toList?method=flowInstanceSectionData",
-					params={@ParamMeta(name = "params[flowInstance.oid]", field="oid")},style=ButtonStyle.NORMAL,
-					power="manage_flow_power"
+					params={@ParamMeta(name = "params[flowInstance.oid]", field="oid"),@ParamMeta(name = "params[flowInstance.flowDefine.oid]", field="flowDefine.oid")},
+					style=ButtonStyle.NORMAL,power="manage_flow_power"
 				),
 			})
 		},
@@ -79,20 +75,27 @@ public class FlowInstanceAction extends ManageAction {
 		return getListDataResult(null);
 	}
 	@ActionTableMeta(dataUrl = "action/manageFlowInstance/flowInstanceSectionData",
-			modelClass="manage.flow.model.FlowInstanceSection",title="执行情况",
+			modelClass="manage.flow.model.FlowInstanceSection",
 			orders= {"flowIndex","acceptDate asc"},
 		cols = { 
 			@ActionTableColMeta(field = "oid", title = "",type=TableColType.INDEX),
 			@ActionTableColMeta(field = "flowSection.identity", title = "环节", width=150,
 				fieldExpression="concat(#{flowSection.identity},'(',#{flowSection.name},')')"),
-			@ActionTableColMeta(field = "user.realname", title = "执行人", width=100),
+			@ActionTableColMeta(field = "user.realname", title = "处理人", width=100),
 			@ActionTableColMeta(field = "acceptDate", title = "接收时间", width=100,dateFormat="yyyy-MM-dd"),
 			@ActionTableColMeta(field = "doneStatus", title = "完成状态", width=100,
 			colDatas= {@TableColData(value="Y",title="已完成"),@TableColData(value="N",title="未完成")}),
 			@ActionTableColMeta(field = "doneDate", title = "完成时间", width=100,dateFormat="yyyy-MM-dd")
 		},
 		querys = {
+			@QueryMeta(field = "flowInstance.flowDefine.oid", name = "", type = QueryType.HIDDEN),
 			@QueryMeta(field = "flowInstance.oid", name = "", type = QueryType.HIDDEN)
+		},
+		buttons = {
+			@ButtonMeta(event = ButtonEvent.MODAL,modalWidth = 500, title = "流程实例",url = "page/manage/flow/viewFlowDefine.html",
+				queryParams = {@ParamMeta(name = "defineOid",field="flowInstance.flowDefine.oid"),@ParamMeta(name = "instanceOid",field="flowInstance.oid")},
+				power = "manage_flow_power",style = ButtonStyle.NORMAL
+			)
 		}
 	)
 	public JSONMessage flowInstanceSectionData(){
@@ -110,6 +113,5 @@ public class FlowInstanceAction extends ManageAction {
 	public Class<? extends ManageAction> getActionClass() {
 		return this.getClass();
 	}
-	
 	
 }

@@ -34,6 +34,7 @@ public class AdminGroupLinkAction extends ManageAction {
 		try {
 			verifyAdminOperPower("manage_system_power");
 			result.push("map", getService(AdminGroupLinkService.class).getLink(adminGroupOid));
+			result.push("allLink", getService(AdminGroupLinkService.class).getAllLink());
 			result.push("code", 0);
 		} catch (Exception e) {
 			result.push("code", 1);

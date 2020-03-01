@@ -65,4 +65,9 @@ public @interface FormRowMeta {
 	 * @return
 	 */
 	FormOtherMeta[] others() default {};
+	/**
+	 * 支持参数#{属性}
+	 * @return
+	 */
+	String showExpression() default "1==1";
 }

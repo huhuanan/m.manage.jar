@@ -42,4 +42,13 @@ public class AdminLoginDao extends Dao {
 		}
 		ModelUpdateUtil.updateModel(admin, new String[]{"lastLoginTime","lastLoginIp","loginCount"});
 	}
+	/**
+	 * 更新用户的当前机构，只更新为空的
+	 * @throws SQLException
+	 */
+	public void updateOrgGroup4Null() throws SQLException {
+		DBManager.executeUpdate("update os_admin_login al set al.org_group_oid=( " + 
+				" SELECT max(gl.admin_group_oid) FROM os_admin_group_link gl WHERE gl.admin_oid=al.oid and gl.type='C' " + 
+				") where al.org_group_oid='' or al.org_group_oid is null");
+	}
 }

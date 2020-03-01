@@ -52,6 +52,7 @@ public class GroupMenuLinkAction extends ManageAction {
 		JSONMessage message=new JSONMessage();
 		try {
 			verifyAdminOperPower("manage_system_power");
+			admin=ModelQueryList.getModel(admin, new String[] {"*"});
 			getService(ModuleService.class).fillModulesJSON("modules", message, admin,true);
 			message.push("code", 0);
 		} catch (Exception e) {

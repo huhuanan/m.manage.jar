@@ -20,8 +20,6 @@ public class FlowSection extends Model {
 
 	@FieldMeta(name="countersign",type=FieldType.STRING,length=1,description="会签|Y是,N否")
 	private String countersign;
-	@LinkTableMeta(name="back_section_oid",table=FlowSection.class,description="退回环节|会签Y必填,会签有一个没通过则退回")
-	private FlowSection backSection;
 	@FieldMeta(name="forwardable",type=FieldType.STRING,length=1,description="可转发|Y是,N否")
 	private String forwardable;
 	
@@ -60,12 +58,6 @@ public class FlowSection extends Model {
 	}
 	public void setCountersign(String countersign) {
 		this.countersign = countersign;
-	}
-	public FlowSection getBackSection() {
-		return backSection;
-	}
-	public void setBackSection(FlowSection backSection) {
-		this.backSection = backSection;
 	}
 	
 }

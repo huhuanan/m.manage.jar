@@ -12,16 +12,19 @@ import m.common.action.ActionMeta;
 import m.common.action.ActionResult;
 import m.common.model.util.ModelQueryUtil;
 import m.system.RuntimeData;
+import m.system.cache.CacheUtil;
 import m.system.exception.MException;
 import m.system.lang.HtmlBodyContent;
 import m.system.util.JSONMessage;
 import manage.dao.AdminLoginDao;
+import manage.model.AdminGroupLink;
 import manage.model.AdminLogin;
 import manage.run.ModuleInitRun;
 import manage.service.AdminLoginService;
 import manage.service.SystemInfoService;
 import manage.util.CaptchaUtil;
 import manage.util.page.button.ButtonMeta;
+import manage.util.page.button.DropButtonMeta;
 import manage.util.page.button.ButtonMeta.ButtonEvent;
 import manage.util.page.button.ButtonMeta.ButtonStyle;
 import manage.util.page.button.ButtonMeta.SuccessMethod;
@@ -44,9 +47,12 @@ import manage.util.page.table.ActionTableMeta;
 public class AdminLoginAction extends StatusAction {
 	
 	private AdminLogin model;
+	private AdminGroupLink link;
 	private String imageCode;
 	private String autoLogin;
 	private String password;
+	private String nodeGroup;
+	private String flterGroup;
 	public ActionResult admin() throws MException, Exception{
 		ActionResult result=new ActionResult(ModuleInitRun.getAdminPage());
 		result.setMap(new HashMap<String, Object>());
@@ -136,7 +142,8 @@ public class AdminLoginAction extends StatusAction {
 		JSONMessage result=new JSONMessage();
 		try {
 			verifyAdminOperPower("manage_system_power");
-			String msg=getService(AdminLoginService.class).save(model,password);
+			String msg=getService(AdminLoginService.class).save(model,link,password);
+			CacheUtil.clear(AdminLogin.class, model.getOid());
 			result.push("code", 0);
 			result.push("msg", msg);
 		} catch (Exception e) {
@@ -162,7 +169,7 @@ public class AdminLoginAction extends StatusAction {
 			}
 			model.setAdminGroup(admin.getAdminGroup());
 			String msg=getService(AdminLoginService.class).save(model,password);
-			resetSessionAdmin();
+			CacheUtil.clear(AdminLogin.class, admin.getOid());
 			result.push("code", 0);
 			result.push("msg", msg);
 		} catch (Exception e) {
@@ -180,7 +187,7 @@ public class AdminLoginAction extends StatusAction {
 			AdminLogin admin=getSessionAdmin();
 			if(null==admin) throw noLoginException;
 			verifyAdminOperPower(getStatusPower());
-			result.push("list", getService(AdminLoginService.class).getAll());
+			result.push("list", getService(AdminLoginService.class).getAll(this.nodeGroup,this.flterGroup));
 			result.push("code", 0);
 		} catch (Exception e) {
 			result.push("code", 1);
@@ -193,6 +200,7 @@ public class AdminLoginAction extends StatusAction {
 		rows={
 			@FormRowMeta(fields={
 				@FormFieldMeta(field = "model.oid", type = FormFieldType.HIDDEN),
+				@FormFieldMeta(field = "link.adminGroup.oid", type = FormFieldType.HIDDEN),
 				@FormFieldMeta(title="账号",field="model.username",type=FormFieldType.TEXT,span=12,hint="请输入账号"),
 				@FormFieldMeta(title="真实姓名",field="model.realname",type=FormFieldType.TEXT,span=12,hint="请输入姓名")
 			}),
@@ -202,7 +210,8 @@ public class AdminLoginAction extends StatusAction {
 			}),
 			@FormRowMeta(fields={
 				@FormFieldMeta(title="管理员组",field ="model.adminGroup.oid", type=FormFieldType.SELECT,hint="请选择管理员组",span=12,
-					querySelect=@QuerySelectMeta(modelClass = "manage.model.AdminGroup", title = "name", value = "oid",conditions={@SelectConditionMeta(field = "status", value = "0")})
+					querySelect=@QuerySelectMeta(modelClass = "manage.model.AdminGroup", title = "name", value = "oid",
+					conditions={@SelectConditionMeta(field = "status", value = "0"),@SelectConditionMeta(field = "type", value = "A")})
 				),
 				@FormFieldMeta(title="头像", field = "model.headImage.oid", type = FormFieldType.IMAGE,span=12,imageType="defaultHead",hint="请选择头像")
 			})
@@ -227,7 +236,8 @@ public class AdminLoginAction extends StatusAction {
 			}),
 			@FormRowMeta(fields={
 				@FormFieldMeta(title="管理员组",field ="model.adminGroup.oid", type=FormFieldType.SELECT,hint="请选择管理员组",span=12,
-					querySelect=@QuerySelectMeta(modelClass = "manage.model.AdminGroup", title = "name", value = "oid",conditions={@SelectConditionMeta(field = "status", value = "0")})
+					querySelect=@QuerySelectMeta(modelClass = "manage.model.AdminGroup", title = "name", value = "oid",
+					conditions={@SelectConditionMeta(field = "status", value = "0"),@SelectConditionMeta(field = "type", value = "A")})
 				),
 				@FormFieldMeta(title="头像", field = "model.headImage.oid", type = FormFieldType.IMAGE,span=12,imageType="defaultHead",hint="请选择头像")
 			})
@@ -282,7 +292,7 @@ public class AdminLoginAction extends StatusAction {
 					power="manage_system_power"
 				),
 				@ButtonMeta(title="查看权限", event = ButtonEvent.MODAL,modalWidth=800, url = "page/manage/adminLogin/viewGroupMenuPage.html", 
-					params={@ParamMeta(name = "adminOid", field="oid"),@ParamMeta(name = "adminGroupOid", field="adminGroup.oid")}, 
+					params={@ParamMeta(name = "adminOid", field="oid")}, 
 					style=ButtonStyle.DEFAULT,power="manage_system_power"
 				),
 			})
@@ -307,6 +317,67 @@ public class AdminLoginAction extends StatusAction {
 		return getListDataResult(null);
 	}
 	
+	
+
+	/**
+	 * 查询列表
+	 * @return
+	 */
+	@ActionTableMeta(dataUrl = "action/manageAdminLogin/groupAdminData",
+			modelClass="manage.model.AdminGroupLink",
+		cols = { 
+			@ActionTableColMeta(field = "admin.oid", title = "",type=TableColType.INDEX),
+			@ActionTableColMeta(field = "admin.username", title = "用户", width=150,
+				fieldExpression = "concat(#{admin.realname},' (',#{admin.username},')')"),
+			@ActionTableColMeta(field = "admin.adminGroup.name", title = "管理员组", align="center"),
+			@ActionTableColMeta(field = "admin.lastLoginTime", title = "最后登陆时间", align="center", width=150, dateFormat="yyyy-MM-dd HH:mm"),
+			@ActionTableColMeta(field = "admin.loginCount", title = "登陆次数", width=70, numberFormat="#,##0", align="right"),
+			@ActionTableColMeta(field = "admin.status", title = "状态",type=TableColType.STATUS,power="manage_system_power",dictionaryType="status",align="center"),
+			@ActionTableColMeta(field="admin.oid",title="操作",width=180,buttons={
+				@ButtonMeta(title="修改", event = ButtonEvent.MODAL,modalWidth=700, url = "action/manageAdminLogin/toEdit",
+					params={@ParamMeta(name = "model.oid", field="admin.oid")},success=SuccessMethod.REFRESH,style=ButtonStyle.NORMAL,
+					power="manage_system_power"
+				),
+				@ButtonMeta(title="查看权限", event = ButtonEvent.MODAL,modalWidth=800, url = "page/manage/adminLogin/viewGroupMenuPage.html", 
+					params={@ParamMeta(name = "adminOid", field="admin.oid")}, 
+					style=ButtonStyle.DEFAULT,power="manage_system_power"
+				),
+			})
+		},
+		querys = {
+			@QueryMeta(field = "adminGroup.oid", name = "组", type = QueryType.HIDDEN),
+			@QueryMeta(field = "admin.username", name = "账号", type = QueryType.TEXT, hint="请输入账号", likeMode=true),
+			@QueryMeta(field = "admin.adminGroup.oid", name = "管理员组", type = QueryType.SELECT, hint="请选择管理员组",
+				querySelect=@QuerySelectMeta(modelClass = "manage.model.AdminGroup", title = "name", value = "oid")
+			),
+			@QueryMeta(field = "admin.loginCount", name = "登陆次数", type = QueryType.INT_RANGE),
+			@QueryMeta(field = "admin.lastLoginTime", name = "最后登陆时间", type = QueryType.DATE_RANGE)
+		},
+		buttons = {
+			@ButtonMeta(title="新增", event = ButtonEvent.MODAL,modalWidth=700, url = "action/manageAdminLogin/toAdd",
+				queryParams = {@ParamMeta(name = "link.adminGroup.oid", field="adminGroup.oid")},
+				style=ButtonStyle.NORMAL,power="manage_system_power",success=SuccessMethod.REFRESH
+			),
+			@ButtonMeta(title="关联用户", event = ButtonEvent.MODAL,modalWidth=900,  url = "page/manage/adminGroupLink/setAdminGroupLinkPage.html", 
+				queryParams = {@ParamMeta(name = "adminGroupOid", field="adminGroup.oid")},
+				style=ButtonStyle.NONE,power="manage_system_power",success = SuccessMethod.REFRESH
+			),
+		},dropButtons= {
+			@DropButtonMeta(title = "权限",buttons = { 
+				@ButtonMeta(title="菜单权限", event = ButtonEvent.MODAL,modalWidth=800,  url = "page/manage/groupMenuLink/setGroupMenuPage.html", 
+					queryParams={@ParamMeta(name = "adminGroupOid", field="adminGroup.oid")},
+					power="manage_system_power", style=ButtonStyle.NONE
+				),
+				@ButtonMeta(title="操作权限", event = ButtonEvent.MODAL,modalWidth=350,  url = "action/manageAdminGroupPower/setAdminGroupPowerPage", 
+					queryParams={@ParamMeta(name = "model.adminGroup.oid", field="adminGroup.oid")},success=SuccessMethod.MUST_REFRESH,
+					power="manage_system_power", style=ButtonStyle.NONE
+				),
+			})
+		}
+	)
+	public JSONMessage groupAdminData(){
+		return getListDataResult(null);
+	}
 	public AdminLogin getModel() {
 		return model;
 	}
@@ -336,7 +407,25 @@ public class AdminLoginAction extends StatusAction {
 	public String getAutoLogin() {
 		return autoLogin;
 	}
+	public AdminGroupLink getLink() {
+		return link;
+	}
+	public void setLink(AdminGroupLink link) {
+		this.link = link;
+	}
 	public void setAutoLogin(String autoLogin) {
 		this.autoLogin = autoLogin;
+	}
+	public String getNodeGroup() {
+		return nodeGroup;
+	}
+	public void setNodeGroup(String nodeGroup) {
+		this.nodeGroup = nodeGroup;
+	}
+	public String getFlterGroup() {
+		return flterGroup;
+	}
+	public void setFlterGroup(String flterGroup) {
+		this.flterGroup = flterGroup;
 	}
 }

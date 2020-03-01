@@ -16,6 +16,8 @@ public class AdminLogin extends StatusModel implements UserModel,SessionModel,Fl
 
 	@LinkTableMeta(name="admin_group_oid",table=AdminGroup.class,description="用户组")
 	private AdminGroup adminGroup;
+	@LinkTableMeta(name="org_group_oid",table=OrgGroupView.class,description="当前机构组")
+	private OrgGroupView orgGroup;
 	@LinkTableMeta(name="head_image_oid",table=ImageInfo.class,description="头像")
 	private ImageInfo headImage;
 
@@ -90,14 +92,20 @@ public class AdminLogin extends StatusModel implements UserModel,SessionModel,Fl
 	public void setRealname(String realname) {
 		this.realname = realname;
 	}
-	public String getUserType() {
-		return "管理员";
-	}
 	public String getToken() {
 		return token;
 	}
 	public void setToken(String token) {
 		this.token = token;
+	}
+	public OrgGroupView getOrgGroup() {
+		return orgGroup;
+	}
+	public void setOrgGroup(OrgGroupView orgGroup) {
+		this.orgGroup = orgGroup;
+	}
+	public String getUserType() {
+		return "管理员";
 	}
 	public AdminLogin getCacheModel(String key) throws Exception {
 		AdminLogin admin=new AdminLogin();

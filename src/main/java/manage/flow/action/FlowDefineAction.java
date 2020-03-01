@@ -12,7 +12,6 @@ import m.system.util.StringUtil;
 import manage.action.ManageAction;
 import manage.flow.model.FlowDefine;
 import manage.flow.service.FlowDefineService;
-import manage.flow.service.FlowSectionService;
 import manage.util.page.button.ButtonMeta;
 import manage.util.page.button.ButtonMeta.ButtonEvent;
 import manage.util.page.button.ButtonMeta.ButtonStyle;
@@ -22,6 +21,7 @@ import manage.util.page.form.ActionFormMeta;
 import manage.util.page.form.FormAlertMeta;
 import manage.util.page.form.FormButtonMeta;
 import manage.util.page.form.FormButtonMeta.FormButtonEvent;
+import manage.util.page.form.FormButtonMeta.FormButtonMethod;
 import manage.util.page.form.FormButtonMeta.FormSuccessMethod;
 import manage.util.page.form.FormFieldMeta;
 import manage.util.page.form.FormFieldMeta.FormFieldType;
@@ -42,6 +42,19 @@ import manage.util.page.table.TableColLink;
 public class FlowDefineAction extends ManageAction {
 	private FlowDefine model;
 
+	public JSONMessage getDefine() {
+		setLogContent("获取", "获取流程信息");
+		JSONMessage result=new JSONMessage();
+		try {
+			verifyAdminOperPower("manage_flow_power");
+			result=getService(FlowDefineService.class).getDefine(model);
+			fillJSONResult(result,true,"");
+		} catch (Exception e) {
+			fillJSONResult(result,false,e.getMessage());
+			if(RuntimeData.getDebug()) e.printStackTrace();
+		}
+		return result;
+	}
 	public JSONMessage doSave(){
 		setLogContent("保存", "保存流程信息");
 		JSONMessage result=new JSONMessage();
@@ -109,17 +122,24 @@ public class FlowDefineAction extends ManageAction {
 			@FormRowMeta(fields={
 				@FormFieldMeta(field = "model.oid", type = FormFieldType.HIDDEN),
 				@FormFieldMeta(field = "model.issueStatus", type = FormFieldType.HIDDEN),
-				@FormFieldMeta(title="标识",field="model.identity",type=FormFieldType.TEXT,hint="请输入标识",span=9,disabled=true),
-				@FormFieldMeta(title="名称",titleWidth=80,field="model.name",type=FormFieldType.TEXT,hint="请输入名称",span=9),
-				@FormFieldMeta(title="版本",titleWidth=80,field="model.version",type=FormFieldType.INT,disabled=true,span=6)
+				@FormFieldMeta(title="标识",field="model.identity",type=FormFieldType.TEXT,hint="请输入标识",span=8,disabled=true),
+				@FormFieldMeta(title="名称",titleWidth=80,field="model.name",type=FormFieldType.TEXT,hint="请输入名称",span=8),
+				@FormFieldMeta(title="版本",titleWidth=80,field="model.version",type=FormFieldType.INT,disabled=true,span=8)
 			}),
 			@FormRowMeta(fields={@FormFieldMeta(title="描述", field = "model.description", type = FormFieldType.TEXTAREA,hint="请输入描述")}),
 			@FormRowMeta(fields={
-				@FormFieldMeta(title="开始环节", field = "model.startSection.oid", type = FormFieldType.SELECT,span=9,
+				@FormFieldMeta(title="开始环节", field = "model.startSection.oid", type = FormFieldType.SELECT,span=8,
 					querySelect= @QuerySelectMeta(modelClass = "manage.flow.model.FlowSection", title="name",titleExpression = "concat(name,' (',identity,')')", value = "oid"),
 					linkField=@LinkFieldMeta(valueField="model.oid",field="flowDefine.oid")
 				),
-				@FormFieldMeta(hideTitle=true,field = "model.oid", type = FormFieldType.ALERT,span=15,
+				@FormFieldMeta(title="开始选项",titleWidth = 80,field="model.startOption",type=FormFieldType.SELECT,span=8,hint="请选择开始选项",
+					querySelectDatas = {
+						@SelectDataMeta(value = "AU",title = "申请人 - 流程申请人执行"),@SelectDataMeta(value = "AO",title = "申请部门 - 流程申请部门的用户执行"),
+						@SelectDataMeta(value = "MU",title = "多选用户 - 选择多个执行用户"),@SelectDataMeta(value = "MO",title = "多选部门 - 选择多个执行部门"),
+						@SelectDataMeta(value = "OU",title = "单选用户 - 选择一个执行用户"),@SelectDataMeta(value = "OO",title = "单选部门 - 选择一个执行部门")
+					}
+				),
+				@FormFieldMeta(hideTitle=true,field = "model.oid", type = FormFieldType.ALERT,span=8,
 					alert=@FormAlertMeta(title = "定义流程环节后再选择并保存"))
 			})
 		},
@@ -154,19 +174,30 @@ public class FlowDefineAction extends ManageAction {
 	@ActionFormMeta(title="流程信息",
 		rows={
 			@FormRowMeta(fields={
-				@FormFieldMeta(title="标识",field="model.identity",type=FormFieldType.TEXT,hint="请输入标识",span=9,disabled=true),
-				@FormFieldMeta(title="名称",titleWidth=80,field="model.name",type=FormFieldType.TEXT,span=9,disabled=true),
-				@FormFieldMeta(title="版本",titleWidth=80,field="model.version",type=FormFieldType.INT,span=6,disabled=true)
+				@FormFieldMeta(field = "model.oid", type = FormFieldType.HIDDEN),
+				@FormFieldMeta(title="标识",field="model.identity",type=FormFieldType.TEXT,hint="请输入标识",span=8,disabled=true),
+				@FormFieldMeta(title="名称",titleWidth=80,field="model.name",type=FormFieldType.TEXT,span=8,disabled=true),
+				@FormFieldMeta(title="版本",titleWidth=80,field="model.version",type=FormFieldType.INT,span=8,disabled=true)
 			}),
 			@FormRowMeta(fields={@FormFieldMeta(title="描述", field = "model.description", type = FormFieldType.TEXTAREA,disabled=true)}),
 			@FormRowMeta(fields={
-				@FormFieldMeta(title="开始环节", field = "model.startSection.oid", type = FormFieldType.SELECT,span=9,disabled=true,
+				@FormFieldMeta(title="开始环节", field = "model.startSection.oid", type = FormFieldType.SELECT,span=8,disabled=true,
 					querySelect= @QuerySelectMeta(modelClass = "manage.flow.model.FlowSection", title="name",titleExpression = "concat(name,' (',identity,')')", value = "oid"),
 					linkField=@LinkFieldMeta(valueField="model.oid",field="flowDefine.oid")
 				),
-				@FormFieldMeta(hideTitle=true,field = "model.oid", type = FormFieldType.ALERT,span=15,
-					alert=@FormAlertMeta(title = "定义流程环节后再选择并保存"))
+				@FormFieldMeta(title="开始选项",titleWidth = 80,field="model.startOption",type=FormFieldType.SELECT,span=8,disabled = true,
+					querySelectDatas = {
+						@SelectDataMeta(value = "AU",title = "申请人 - 流程申请人执行"),@SelectDataMeta(value = "AO",title = "申请部门 - 流程申请部门的用户执行"),
+						@SelectDataMeta(value = "MU",title = "多选用户 - 选择多个执行用户"),@SelectDataMeta(value = "MO",title = "多选部门 - 选择多个执行部门"),
+						@SelectDataMeta(value = "OU",title = "单选用户 - 选择一个执行用户"),@SelectDataMeta(value = "OO",title = "单选部门 - 选择一个执行部门")
+					}
+				)
 			})
+		},
+		buttons= {
+			@FormButtonMeta(title = "流程定义图",event=FormButtonEvent.MODAL,modalWidth=600, url = "page/manage/flow/viewFlowDefine.html",
+				power="manage_flow_power",method=FormButtonMethod.PARAMS_SUBMIT,params=@ParamMeta(name = "defineOid",field="model.oid"),
+				style = ButtonStyle.DEFAULT),
 		},
 		others= {
 			@FormOtherMeta(title = "流程环节", url = "action/manageFlowSection/toList?method=viewFlowSectionData",

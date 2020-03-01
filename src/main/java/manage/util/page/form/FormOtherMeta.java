@@ -21,10 +21,16 @@ public @interface FormOtherMeta {
 	 * 其它信息地址
 	 * @return
 	 */
-	String url();
+	String url() default "";
+	/** 如果 url 未空则使用urlExpression
+	 * 例：'url?name='+#{属性}
+	 * 其它信息地址 支持参数 #{属性}  
+	 * @return
+	 */
+	String urlExpression() default "''";
 	/** 
 	 * 其他字段填充,用其他字段结合起来连接url
 	 * @return
 	 */
-	LinkFieldMeta linkField() default @LinkFieldMeta();
+	LinkFieldMeta[] linkField() default {};
 }

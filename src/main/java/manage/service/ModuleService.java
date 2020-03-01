@@ -79,10 +79,12 @@ public class ModuleService extends Service {
 										new String[] {"adminGroup.oid"}, null,
 										QueryCondition.and(new QueryCondition[] {
 											QueryCondition.eq("admin.oid", admin.getOid()),
-											QueryCondition.eq("adminGroup.status","0")
+											QueryCondition.eq("adminGroup.status","0"),
+											QueryCondition.eq("type","B")
 										})
 									)
-								)
+								),
+								QueryCondition.eq("adminGroup.oid",admin.getOrgGroup().getOid())
 							})
 						)
 					)
@@ -124,10 +126,12 @@ public class ModuleService extends Service {
 										new String[] {"adminGroup.oid"}, null,
 										QueryCondition.and(new QueryCondition[] {
 											QueryCondition.eq("admin.oid", admin.getOid()),
-											QueryCondition.eq("adminGroup.status","0")
+											QueryCondition.eq("adminGroup.status","0"),
+											QueryCondition.eq("type","B")
 										})
 									)
-								)
+								),
+								QueryCondition.eq("adminGroup.oid",admin.getOrgGroup().getOid())
 							})
 						)
 					)
@@ -177,10 +181,12 @@ public class ModuleService extends Service {
 										new String[] {"adminGroup.oid"}, null,
 										QueryCondition.and(new QueryCondition[] {
 											QueryCondition.eq("admin.oid", admin.getOid()),
-											QueryCondition.eq("adminGroup.status","0")
+											QueryCondition.eq("adminGroup.status","0"),
+											QueryCondition.eq("type","B")
 										})
 									)
-								)
+								),
+								QueryCondition.eq("adminGroup.oid",admin.getOrgGroup().getOid())
 							})
 						)
 					)

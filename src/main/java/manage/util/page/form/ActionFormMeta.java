@@ -15,6 +15,12 @@ public @interface ActionFormMeta {
 	 * @return
 	 */
 	String title() default "";
+	/** 如果 title 未空则使用titleExpression
+	 * 例：''+#{属性}
+	 * 其它信息地址 支持参数 #{属性}  
+	 * @return
+	 */
+	String titleExpression() default "''";
 	/**
 	 * 表单行
 	 * @return

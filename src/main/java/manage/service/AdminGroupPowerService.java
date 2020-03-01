@@ -71,7 +71,16 @@ public class AdminGroupPowerService extends Service {
 				QueryCondition.in("adminGroup.oid",
 					ModelQueryList.instance(AdminGroupLink.class,
 						new String[] {"adminGroup.oid"}, null,
-						QueryCondition.eq("admin.oid", admin_oid)
+						QueryCondition.and(new QueryCondition[] {
+							QueryCondition.eq("admin.oid", admin_oid),
+							QueryCondition.eq("type", "B")
+						})
+					)
+				),
+				QueryCondition.in("adminGroup.oid",
+					ModelQueryList.instance(AdminLogin.class,
+						new String[] {"orgGroup.oid"}, null,
+						QueryCondition.eq("oid", admin_oid)
 					)
 				)
 			})

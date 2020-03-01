@@ -13,12 +13,14 @@ public class FlowSectionLink extends Model {
 	private FlowSection fromSection;
 	@LinkTableMeta(name="to_section_oid",table=FlowSection.class,description="下一步环节")
 	private FlowSection toSection;
-	@FieldMeta(name="is_next",type=FieldType.STRING,length=1,description="下一步|Y有,N结束")
+	@FieldMeta(name="is_next",type=FieldType.STRING,length=1,description="下一步|Y有,N结束,B退回")
 	private String isNext;
 	@FieldMeta(name="to_desc",type=FieldType.STRING,length=50,description="下一步描述")
 	private String toDesc;
 	@FieldMeta(name="to_param",type=FieldType.STRING,length=50,description="下一步参数")
 	private String toParam;
+	@FieldMeta(name="to_option",type=FieldType.STRING,length=2,description="下一步选项|AU申请人,AO申请部门,MU多选用户,MO多选部门,OU单选用户,OO单选部门")
+	private String toOption;
 	public FlowSection getFromSection() {
 		return fromSection;
 	}
@@ -48,6 +50,12 @@ public class FlowSectionLink extends Model {
 	}
 	public void setToParam(String toParam) {
 		this.toParam = toParam;
+	}
+	public String getToOption() {
+		return toOption;
+	}
+	public void setToOption(String toOption) {
+		this.toOption = toOption;
 	}
 	
 }

@@ -19,6 +19,7 @@ import manage.util.page.form.FormButtonMeta.FormButtonEvent;
 import manage.util.page.form.FormButtonMeta.FormButtonMethod;
 import manage.util.page.form.FormFieldMeta;
 import manage.util.page.form.FormFieldMeta.FormFieldType;
+import manage.util.page.query.LinkFieldMeta;
 import manage.util.page.form.FormOtherMeta;
 import manage.util.page.form.FormRowMeta;
 import manage.util.page.form.FormViewUIMeta;
@@ -55,6 +56,7 @@ public class FormMetaUtil {
 			Object[] vui=toViewUI(row.viewui());
 			map.put("vulist", vui[0]);
 			map.put("vplist", vui[1]);
+			map.put("showExpression", convertHTMLParams(row.showExpression()));
 			List<Map<String,Object>> fm=new ArrayList<Map<String,Object>>();
 			for(FormFieldMeta field : row.fields()){
 				Map<String,Object> m=new HashMap<String, Object>();
@@ -85,8 +87,13 @@ public class FormMetaUtil {
 				if(((List<String>)vui[0]).size()>0) {
 					m.put("viewuiSpan", field.viewuiSpan()==0?field.span():field.viewuiSpan());
 				}
-				if(field.type()==FormFieldType.HTML) {
+				if(field.type()==FormFieldType.HTML||field.type()==FormFieldType.SELECT_PAGE) {
 					m.put("html", convertHTMLParams(field.html()));
+				}
+				if(field.type()==FormFieldType.SELECT_PAGE) {
+					m.put("selectPageUrl", field.selectPageUrl());
+					m.put("selectPageUrlExpression", convertHTMLParams(field.selectPageUrlExpression()));
+					m.put("selectPageWidth", field.selectPageWidth());
 				}
 				if(field.type()==FormFieldType.ALERT) {
 					m.put("title", "");
@@ -110,6 +117,7 @@ public class FormMetaUtil {
 				m.put("hiddenValues", field.hiddenValues());
 				m.put("showField", field.showField());
 				m.put("showValues", field.showValues());
+				m.put("showExpression", convertHTMLParams(field.showExpression()));
 				m.put("clearField", field.clearField());
 				m.put("thumWidth", field.thumWidth());
 				m.put("thumRatio", field.thumRatio());
@@ -154,12 +162,19 @@ public class FormMetaUtil {
 			for(FormOtherMeta other : row.others()){
 				Map<String,Object> m=new HashMap<String, Object>();
 				m.put("title", other.title());
+				m.put("urlExpression", convertHTMLParams(other.urlExpression()));
 				JSONMessage json=new JSONMessage();
 				json.push("url", other.url());
-				if(!StringUtil.isSpace(other.linkField().field())){
-					json.push("field", other.linkField().field());
-					json.push("valueField", other.linkField().valueField());
+				List<String> fieldList=new ArrayList<String>();
+				List<String> valuefieldList=new ArrayList<String>();
+				for(LinkFieldMeta lf : other.linkField()) {
+					if(!StringUtil.isSpace(lf.field())){
+						fieldList.add(lf.field());
+						valuefieldList.add(lf.valueField());
+					}
 				}
+				json.push("field", fieldList);
+				json.push("valueField", valuefieldList);
 				m.put("param", json);
 				om.add(m);
 			}
@@ -187,6 +202,7 @@ public class FormMetaUtil {
 				map.put("showValues", button.showValues());
 				map.put("hiddenField", button.hiddenField());
 				map.put("hiddenValues", button.hiddenValues());
+				map.put("showExpression", convertHTMLParams(button.showExpression()));
 				JSONMessage json=new JSONMessage();
 				json.push("confirm", button.confirm());
 				json.push("url", button.url());
@@ -217,18 +233,25 @@ public class FormMetaUtil {
 		for(FormOtherMeta other : others){
 			Map<String,Object> map=new HashMap<String, Object>();
 			map.put("title", other.title());
+			map.put("urlExpression", convertHTMLParams(other.urlExpression()));
 			JSONMessage json=new JSONMessage();
 			json.push("url", other.url());
-			if(!StringUtil.isSpace(other.linkField().field())){
-				json.push("field", other.linkField().field());
-				json.push("valueField", other.linkField().valueField());
+			List<String> fieldList=new ArrayList<String>();
+			List<String> valuefieldList=new ArrayList<String>();
+			for(LinkFieldMeta lf : other.linkField()) {
+				if(!StringUtil.isSpace(lf.field())){
+					fieldList.add(lf.field());
+					valuefieldList.add(lf.valueField());
+				}
 			}
+			json.push("field", fieldList);
+			json.push("valueField", valuefieldList);
 			map.put("param", json);
 			list.add(map);
 		}
 		return list;
 	}
-	private static String convertHTMLParams(String html) {
+	public static String convertHTMLParams(String html) {
 		Pattern pattern=Pattern.compile("\\#\\{.+?\\}");
 		Matcher matcher=pattern.matcher(html);
 		while(matcher.find()){

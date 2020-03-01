@@ -99,18 +99,6 @@ public abstract class ManageAction extends Action {
 		return "_admin_login";
 	}
 	/**
-	 * 重置登录信息 
-	 */
-	public void resetSessionAdmin(){
-		AdminLogin admin=getSessionModel(AdminLogin.class);
-		if(null!=admin) {
-			removeSessionModel();
-			try {
-				setSessionModel(ModelQueryList.getModel(admin, 1));
-			} catch (Exception e) { }
-		}
-	}
-	/**
 	 * 获取登录用户信息 返回null说明没有登录
 	 * @return
 	 */
@@ -281,6 +269,7 @@ public abstract class ManageAction extends Action {
 		Map<String,Boolean> powerMap=getAdminOperPower();
 		Map<String,Object> map=result.getMap();
 		map.put("formTitle", meta.title());
+		map.put("formTitleExpression", FormMetaUtil.convertHTMLParams(meta.titleExpression()));
 		map.put("formRows", FormMetaUtil.toRows(meta.rows(),powerMap));
 		map.put("formButtons", FormMetaUtil.toButtons(meta.buttons(),powerMap));
 		map.put("others", FormMetaUtil.toOthers(meta.others()));

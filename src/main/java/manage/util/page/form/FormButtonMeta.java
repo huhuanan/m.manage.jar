@@ -113,4 +113,9 @@ public @interface FormButtonMeta {
 	 * @return
 	 */
 	String showValues() default "";
+	/**
+	 * 支持参数#{属性}
+	 * @return
+	 */
+	String showExpression() default "1==1";
 }

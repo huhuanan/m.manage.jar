@@ -10,12 +10,14 @@ import m.common.model.util.ModelCheckUtil;
 import m.common.model.util.ModelQueryList;
 import m.common.model.util.ModelUpdateUtil;
 import m.common.model.util.QueryCondition;
+import m.common.model.util.QueryOrder;
 import m.common.service.Service;
 import m.system.db.DBManager;
 import m.system.db.DataRow;
 import m.system.db.TransactionManager;
 import m.system.exception.MException;
 import m.system.util.GenerateID;
+import m.system.util.JSONMessage;
 import m.system.util.StringUtil;
 import manage.flow.model.FlowDefine;
 import manage.flow.model.FlowSection;
@@ -38,6 +40,14 @@ public class FlowDefineService extends Service {
 			})
 		);
 	}
+	public JSONMessage getDefine(FlowDefine model) throws Exception {
+		JSONMessage result=new JSONMessage();
+		result.push("model",ModelQueryList.getModel(FlowDefine.class, model.getOid(), new String[] {"*"}));
+		result.push("list", ModelQueryList.getModelList(FlowSection.class, new String[] {"*"}, null, QueryCondition.eq("flowDefine.oid", model.getOid())));
+		result.push("link", ModelQueryList.getModelList(FlowSectionLink.class,new String[] {"*"},null,QueryCondition.eq("fromSection.flowDefine.oid",model.getOid()),
+				new QueryOrder[] {QueryOrder.asc("fromSection.sort"),QueryOrder.asc("fromSection.identity"),QueryOrder.asc("isNext"),QueryOrder.asc("toSection.identity")}));
+		return result;
+	}
 	public String save(FlowDefine model) throws MException, SQLException {
 		ModelCheckUtil.checkNotNull(model, new String[] {"name","identity","version"});
 		ModelCheckUtil.checkUniqueCombine(model, new String[]{"identity","version"},"标识已存在");
@@ -48,7 +58,7 @@ public class FlowDefineService extends Service {
 			return "保存成功";
 		}else{
 			ModelCheckUtil.equals(model, new String[] {"issueStatus"}, new String[] {"C"}, "只有草稿状态才能修改");
-			ModelUpdateUtil.updateModel(model, new String[]{"name","description","startSection.oid"});
+			ModelUpdateUtil.updateModel(model, new String[]{"name","description","startSection.oid","startOption"});
 			return "修改成功";
 		}
 	}
@@ -99,11 +109,6 @@ public class FlowDefineService extends Service {
 				fsMap.put(fs.getOid(), fs);
 				fs.setFlowDefine(model);
 				fs.setOid(GenerateID.generatePrimaryKey());
-			}
-			for(FlowSection fs : fsList) {
-				if(null!=fs.getBackSection()&&!StringUtil.isSpace(fs.getBackSection().getOid())) {
-					fs.setBackSection(fsMap.get(fs.getBackSection().getOid()));
-				}
 			}
 			for(FlowSectionLink fl : flList) {
 				if(null!=fl.getFromSection()&&!StringUtil.isSpace(fl.getFromSection().getOid())) {

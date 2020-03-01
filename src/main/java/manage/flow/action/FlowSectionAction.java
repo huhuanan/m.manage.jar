@@ -124,16 +124,10 @@ public class FlowSectionAction extends ManageAction {
 			}),
 			@FormRowMeta(fields={
 				@FormFieldMeta(title="是否会签",field = "model.countersign", type = FormFieldType.RADIO,span=9,
-					querySelectDatas= {@SelectDataMeta(value="Y",title="是"),@SelectDataMeta(value="N",title="否")},
-					clearField="model.backSection.oid"
+					querySelectDatas= {@SelectDataMeta(value="Y",title="是"),@SelectDataMeta(value="N",title="否")}
 				),
 				@FormFieldMeta(hideTitle=true,field = "model.oid", type = FormFieldType.ALERT,span=15,
 					alert=@FormAlertMeta(title = "会签环节的所有人都通过才能进入下一步，否则走退回环节。")),
-				@FormFieldMeta(title="退回环节",field = "model.backSection.oid", type = FormFieldType.SELECT,span=15,
-					querySelect= @QuerySelectMeta(modelClass = "manage.flow.model.FlowSection", title = "name",titleExpression="concat(name,' (',identity,')')", value = "oid"),
-					linkField=@LinkFieldMeta(valueField="model.flowDefine.oid",field="flowDefine.oid"),
-					showField="model.countersign",showValues="Y"
-				),
 			})
 		},
 		buttons={
@@ -158,16 +152,24 @@ public class FlowSectionAction extends ManageAction {
 				@FormFieldMeta(title="当前环节",titleWidth = 80,field="link.fromSection.identity",type=FormFieldType.TEXT,span=14,disabled=true),
 				@FormFieldMeta(hideTitle=true,field="link.fromSection.name",type=FormFieldType.TEXT,span=10,disabled=true),
 				@FormFieldMeta(title="下一步",titleWidth = 80,field = "link.isNext", type = FormFieldType.RADIO,span=8,
-					querySelectDatas= {@SelectDataMeta(value="Y",title="有"),@SelectDataMeta(value="N",title="结束")},
+					querySelectDatas= {@SelectDataMeta(value="Y",title="有"),@SelectDataMeta(value="B",title="退回"),@SelectDataMeta(value="N",title="结束")},
 					clearField="link.toSection.oid"
 				),
+				@FormFieldMeta(title="参数",titleWidth = 60,field="link.toParam",type=FormFieldType.TEXT,span=16,hint="请输入下一步参数",
+					showField="link.isNext",showValues="Y,N"),
 				@FormFieldMeta(title="描述",titleWidth = 60,field="link.toDesc",type=FormFieldType.TEXT,span=16,hint="请输入下一步描述"),
-				@FormFieldMeta(title="参数",titleWidth = 60,field="link.toParam",type=FormFieldType.TEXT,span=16,hint="请输入下一步参数"),
-				@FormFieldMeta(title="环节",titleWidth = 80, field = "link.toSection.oid", type = FormFieldType.SELECT,hint="请选择下一环节",
+				@FormFieldMeta(title="环节",titleWidth = 60, field = "link.toSection.oid", type = FormFieldType.SELECT,span=16,hint="请选择下一环节",
 					querySelect= @QuerySelectMeta(modelClass = "manage.flow.model.FlowSection", title = "name",titleExpression="concat(name,' (',identity,')')", value = "oid"),
 					linkField=@LinkFieldMeta(valueField="link.fromSection.flowDefine.oid",field="flowDefine.oid"),
-					showField="link.isNext",showValues="Y"
+					showField="link.isNext",showValues="Y,B"
 				),
+				@FormFieldMeta(title="选项",titleWidth = 80,field="link.toOption",type=FormFieldType.SELECT,span=24,hint="请选择下一步选项",
+					querySelectDatas = {
+						@SelectDataMeta(value = "AU",title = "申请人 - 流程申请人执行"),@SelectDataMeta(value = "AO",title = "申请部门 - 流程申请部门的用户执行"),
+						@SelectDataMeta(value = "MU",title = "多选用户 - 选择多个执行用户"),@SelectDataMeta(value = "MO",title = "多选部门 - 选择多个执行部门"),
+						@SelectDataMeta(value = "OU",title = "单选用户 - 选择一个执行用户"),@SelectDataMeta(value = "OO",title = "单选部门 - 选择一个执行部门")
+					},showField="link.isNext",showValues="Y"
+				),//AU申请人,AO申请部门,MU多选用户,MO多选部门,OU单选用户,OO单选部门
 			})
 		},
 		buttons={
@@ -185,7 +187,7 @@ public class FlowSectionAction extends ManageAction {
 	}
 	@ActionTableMeta(dataUrl = "action/manageFlowSection/flowSectionData",
 			modelClass="manage.flow.model.FlowSectionLink",
-			orders= {"fromSection.sort asc","fromSection.identity asc","isNext desc","oid asc"},
+			orders= {"fromSection.sort asc","fromSection.identity asc","isNext desc","toSection.identity asc"},
 			rowspanIndex=0,rowspanNum=7,
 		cols = { 
 			@ActionTableColMeta(field = "fromSection.identity", title = "标识", width=80),
@@ -194,7 +196,6 @@ public class FlowSectionAction extends ManageAction {
 			colDatas= {@TableColData(value="Y",title="是"),@TableColData(value="N",title="否")}),
 			@ActionTableColMeta(field = "fromSection.countersign", title = "会签", width=50,
 			colDatas= {@TableColData(value="Y",title="是"),@TableColData(value="N",title="否")}),
-			@ActionTableColMeta(field = "fromSection.backSection.name", title = "退回环节", width=100),
 			@ActionTableColMeta(field = "fromSection.sort", title = "排序", width=50),
 			@ActionTableColMeta(field = "fromSection.oid",title="环节",width=90,align="center",power="manage_flow_power",dropButtons= {
 				@DropButtonMeta(title="操作",style=ButtonStyle.NORMAL,buttons={
@@ -211,10 +212,13 @@ public class FlowSectionAction extends ManageAction {
 				)	
 			}),
 			@ActionTableColMeta(field = "isNext", title = "下一步", width=60,
-				colDatas= {@TableColData(value="Y",title="有"),@TableColData(value="N",title="结束")}),
+				colDatas= {@TableColData(value="Y",title="有"),@TableColData(value="B",title="退回"),@TableColData(value="N",title="结束")}),
 			@ActionTableColMeta(field = "toSection.name", title = "环节", width=100),
-			@ActionTableColMeta(field = "toParam", title = "参数", width=100),
+			@ActionTableColMeta(field = "toParam", title = "参数", width=70),
 			@ActionTableColMeta(field = "toDesc", title = "描述", width=100),
+			@ActionTableColMeta(field = "toOption", title = "选项", width=100,
+			colDatas = {@TableColData(value="AU",title="申请人"),@TableColData(value="AO",title="申请部门"),@TableColData(value="MU",title="多选用户"),
+				@TableColData(value="MO",title="多选部门"),@TableColData(value="OU",title="单选用户"),@TableColData(value="OO",title="单选部门")}),
 			@ActionTableColMeta(field = "oid",title="链接",width=90,fixed ="right",align="center",power="manage_flow_power",dropButtons={
 				@DropButtonMeta(title = "操作",style=ButtonStyle.NORMAL,buttons= {
 					@ButtonMeta(title="修改", event = ButtonEvent.MODAL,modalWidth=500, url = "action/manageFlowSection/toEditNext",
@@ -240,6 +244,11 @@ public class FlowSectionAction extends ManageAction {
 				queryParams= {@ParamMeta(name = "model.flowDefine.oid",field="fromSection.flowDefine.oid")},
 				style=ButtonStyle.NONE,
 				power="manage_flow_power"
+			),
+			@ButtonMeta(title="流程定义图", event = ButtonEvent.MODAL,modalWidth=600,  url = "page/manage/flow/viewFlowDefine.html", 
+				queryParams= {@ParamMeta(name = "defineOid",field="fromSection.flowDefine.oid")},
+				success=SuccessMethod.REFRESH,style=ButtonStyle.DEFAULT,
+				power="manage_flow_power"
 			)
 		}
 	)
@@ -257,13 +266,15 @@ public class FlowSectionAction extends ManageAction {
 			colDatas= {@TableColData(value="Y",title="是"),@TableColData(value="N",title="否")}),
 			@ActionTableColMeta(field = "fromSection.countersign", title = "会签", width=50,
 			colDatas= {@TableColData(value="Y",title="是"),@TableColData(value="N",title="否")}),
-			@ActionTableColMeta(field = "fromSection.backSection.name", title = "退回环节", width=100),
 			@ActionTableColMeta(field = "fromSection.sort", title = "排序", width=50),
 			@ActionTableColMeta(field = "isNext", title = "下一步", width=60,
-				colDatas= {@TableColData(value="Y",title="有"),@TableColData(value="N",title="结束")}),
+				colDatas= {@TableColData(value="Y",title="有"),@TableColData(value="B",title="退回"),@TableColData(value="N",title="结束")}),
 			@ActionTableColMeta(field = "toSection.name", title = "环节", width=100),
-			@ActionTableColMeta(field = "toParam", title = "参数", width=100),
+			@ActionTableColMeta(field = "toParam", title = "参数", width=70),
 			@ActionTableColMeta(field = "toDesc", title = "描述", width=100),
+			@ActionTableColMeta(field = "toOption", title = "选项", width=100,
+			colDatas = {@TableColData(value="AU",title="申请人"),@TableColData(value="AO",title="申请部门"),@TableColData(value="MU",title="多选用户"),
+				@TableColData(value="MO",title="多选部门"),@TableColData(value="OU",title="单选用户"),@TableColData(value="OO",title="单选部门")}),
 		},
 		querys = {
 			@QueryMeta(field = "fromSection.flowDefine.oid", name = "", type = QueryType.HIDDEN),

@@ -31,8 +31,8 @@ public class FlowSectionService extends Service {
 	 * @throws MException
 	 * @throws SQLException
 	 */
-	public FlowSection getNext(String defineOid,String secId,String isNext,String toParam) throws MException, SQLException {
-		FlowSectionLink link=ModelQueryList.getModel(FlowSectionLink.class, new String[] {"toSection.*"},
+	public FlowSectionLink getLink(String defineOid,String secId,String isNext,String toParam) throws MException, SQLException {
+		FlowSectionLink link=ModelQueryList.getModel(FlowSectionLink.class, new String[] {"*","toSection.*"},
 			QueryCondition.and(new QueryCondition[] {
 				QueryCondition.eq("fromSection.flowDefine.oid", defineOid),
 				QueryCondition.eq("fromSection.identity", secId),
@@ -41,11 +41,7 @@ public class FlowSectionService extends Service {
 			})
 		);
 		if(null==link) throw new MException(this.getClass(), "下一步参数错误");
-		if(null!=link.getToSection()&&!StringUtil.isSpace(link.getToSection().getOid())) {
-			return link.getToSection();
-		}else {
-			return null;
-		}
+		return link;
 	}
 	
 	public String save(FlowSection model) throws Exception {
@@ -56,9 +52,6 @@ public class FlowSectionService extends Service {
 			ModelCheckUtil.checkNotNull(model, new String[] {"name","identity","countersign","forwardable","flowDefine.oid"});
 			ModelCheckUtil.checkUniqueCombine(model, new String[]{"identity","flowDefine.oid"},"标识已存在");
 			ModelCheckUtil.equals(model.getFlowDefine(), new String[] {"issueStatus"}, new String[] {"C"}, "只有草稿状态的流程才能编辑");
-			if(model.getCountersign().equals("Y")) {
-				ModelCheckUtil.checkNotNull(model, new String[] {"backSection.oid"});
-			}
 			if(StringUtil.isSpace(model.getOid())){
 				model.setOid(GenerateID.generatePrimaryKey());
 				ModelUpdateUtil.insertModel(model);
@@ -67,6 +60,7 @@ public class FlowSectionService extends Service {
 				link.setFromSection(model);
 				link.setIsNext("N");
 				link.setToParam("");
+				link.setToDesc("同意");
 				ModelUpdateUtil.insertModel(link);
 				msg="保存成功";
 			}else{
@@ -112,27 +106,43 @@ public class FlowSectionService extends Service {
 		}
 	}
 	public String saveNext(FlowSectionLink link) throws Exception {
-		ModelCheckUtil.checkNotNull(link, new String[] {"isNext","fromSection.oid"});
-		if(link.getIsNext().equals("Y")) {
-			ModelCheckUtil.checkNotNull(link, new String[] {"toSection.oid"});
-			if(link.getFromSection().getOid().equals(link.getToSection().getOid())) 
-				throw new MException(this.getClass(),"环节链接不能链接自己");
-			ModelCheckUtil.checkUniqueCombine(link, new String[] {"fromSection.oid","isNext","toSection.oid","toParam"}, "该环节链接已存在");
-		}else {
-			link.setToSection(null);
-			ModelCheckUtil.checkUniqueCombine(link, new String[] {"fromSection.oid","isNext","toParam"}, "该环节结束链接已存在");
+		String msg="";
+		TransactionManager tm=new TransactionManager();
+		try {
+			tm.begin();
+			ModelCheckUtil.checkNotNull(link, new String[] {"isNext","fromSection.oid"});
+			if(link.getIsNext().equals("Y")||link.getIsNext().equals("B")){
+				ModelCheckUtil.checkNotNull(link, new String[] {"toSection.oid"});
+				if(link.getFromSection().getOid().equals(link.getToSection().getOid())) 
+					throw new MException(this.getClass(),"环节链接不能链接自己");
+				if(link.getIsNext().equals("Y")) {//有
+					ModelCheckUtil.checkNotNull(link, new String[] {"toOption"});
+				}else if(link.getIsNext().equals("B")) {//退回
+					link.setToParam("");
+					link.setToOption("");
+				}
+			}else {//结束
+				link.setToOption("");
+				link.setToSection(null);
+			}
+			ModelCheckUtil.checkUniqueCombine(link, new String[] {"fromSection.oid","isNext","toParam"}, "该环节链接已存在");
+			ModelCheckUtil.checkNotNull(link, new String[] {"toDesc"});
+			link.setFromSection(ModelQueryList.getModel(link.getFromSection(), new String[] {"*"}));
+			ModelCheckUtil.equals(link.getFromSection().getFlowDefine(), new String[] {"issueStatus"}, new String[] {"C"}, "只有草稿状态的流程才能编辑");
+			if(StringUtil.isSpace(link.getOid())){
+				link.setOid(GenerateID.generatePrimaryKey());
+				ModelUpdateUtil.insertModel(link);
+				msg="保存成功";
+			}else {
+				ModelUpdateUtil.updateModel(link,new String[] {"isNext","toSection.oid","toParam","toDesc","toOption"});
+				msg="修改成功";
+			}
+			tm.commit();
+		}catch(Exception e) {
+			tm.rollback();
+			throw e;
 		}
-		link.setFromSection(ModelQueryList.getModel(link.getFromSection(), new String[] {"*"}));
-		ModelCheckUtil.equals(link.getFromSection().getFlowDefine(), new String[] {"issueStatus"}, new String[] {"C"}, "只有草稿状态的流程才能编辑");
-		
-		if(StringUtil.isSpace(link.getOid())){
-			link.setOid(GenerateID.generatePrimaryKey());
-			ModelUpdateUtil.insertModel(link);
-			return "保存成功";
-		}else {
-			ModelUpdateUtil.updateModel(link,new String[] {"isNext","toSection.oid","toParam","toDesc"});
-			return "修改成功";
-		}
+		return msg;
 	}
 	public void deleteNext(FlowSectionLink link) throws Exception {
 		link=ModelQueryList.getModel(link, new String[] {"*","fromSection.flowDefine.oid"});
@@ -149,8 +159,8 @@ public class FlowSectionService extends Service {
 
 	public void verifySection(String flowDefineOid) throws Exception {
 		FlowDefine define=ModelQueryList.getModel(FlowDefine.class,flowDefineOid, new String[] {"*"});
-		if(null==define.getStartSection()||StringUtil.isSpace(define.getStartSection().getOid()))
-			throw new MException(this.getClass(), "未设置开始环节");
+		if(null==define.getStartSection()||StringUtil.isSpace(define.getStartSection().getOid())||StringUtil.isSpace(define.getStartOption()))
+			throw new MException(this.getClass(), "未设置开始环节或开始选项");
 		Map<String,Boolean> fsMap=new HashMap<String,Boolean>();
 		List<FlowSection> fsList=ModelQueryList.getModelList(FlowSection.class, new String[] {"*"}, null, 
 			QueryCondition.eq("flowDefine.oid", flowDefineOid));
@@ -167,6 +177,15 @@ public class FlowSectionService extends Service {
 						break;
 					}
 				}
+			}
+			if(fs.getCountersign().equals("Y")) {
+				boolean flag=false;
+				for(FlowSectionLink fl : flList) {
+					if(fl.getFromSection().getOid().equals(fs.getOid())&&fl.getIsNext().equals("B")) {
+						flag=true;break;
+					}
+				}
+				if(!flag) throw new MException(this.getClass(), "会签环节没有退回链接");
 			}
 		}
 		for(Boolean b : fsMap.values()) {
