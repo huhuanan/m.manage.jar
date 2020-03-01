@@ -14,6 +14,7 @@ import m.common.model.util.ModelUpdateUtil;
 import m.common.model.util.QueryCondition;
 import m.common.model.util.QueryOrder;
 import m.common.service.Service;
+import m.system.cache.CacheUtil;
 import m.system.db.TransactionManager;
 import m.system.exception.MException;
 import m.system.util.ArrayUtil;
@@ -52,8 +53,7 @@ public class AdminLoginService extends Service {
 				errorVerify(model.getUsername());
 				throw new MException(this.getClass(),"账号或者密码错误!");
 			}else{
-				model.setOid(user_oid);
-				model=ModelQueryList.getModel(model,1);
+				model=CacheUtil.get(AdminLogin.class,user_oid);
 				if("9".equals(model.getStatus())){
 					throw new MException(this.getClass(),"账号已被停用!");
 				}

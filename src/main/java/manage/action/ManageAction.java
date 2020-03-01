@@ -128,9 +128,7 @@ public abstract class ManageAction extends Action {
 				}
 				if(!StringUtil.isSpace(adminOid)){
 					try {
-						admin=new AdminLogin();
-						admin.setOid(adminOid);
-						admin=ModelQueryList.getModel(admin, 1);
+						admin=CacheUtil.get(AdminLogin.class,adminOid);
 						setSessionAdmin(admin,"");
 						getDao(AdminLoginDao.class).updateLastInfo(admin, getIpAddress());
 					} catch (Exception e) {}
@@ -147,12 +145,11 @@ public abstract class ManageAction extends Action {
 	public void setSessionAdmin(AdminLogin admin,String autoLogin){
 		if(StringUtil.noSpace(autoLogin).equals("Y")){
 			try {
-				AdminLogin a=ModelQueryUtil.getModel(admin);
-				Cookie cookie=new Cookie("admin_name",a.getUsername());
+				Cookie cookie=new Cookie("admin_name",admin.getUsername());
 				cookie.setMaxAge(604800);
 				cookie.setPath("/");
 				getResponse().addCookie(cookie);
-				cookie=new Cookie("admin_key",a.getPassword());
+				cookie=new Cookie("admin_key",admin.getPassword());
 				cookie.setMaxAge(604800);
 				cookie.setPath("/");
 				getResponse().addCookie(cookie);

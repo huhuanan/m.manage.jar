@@ -9,7 +9,7 @@ import m.common.model.SessionModel;
 import m.common.model.TableMeta;
 import m.common.model.UserModel;
 import m.common.model.type.FieldType;
-import m.common.model.util.ModelQueryList;
+import m.common.model.util.ModelQueryUtil;
 import m.system.cache.FlushCache;
 @TableMeta(name="os_admin_login",description="管理员登录表")
 public class AdminLogin extends StatusModel implements UserModel,SessionModel,FlushCache {
@@ -110,8 +110,7 @@ public class AdminLogin extends StatusModel implements UserModel,SessionModel,Fl
 	public AdminLogin getCacheModel(String key) throws Exception {
 		AdminLogin admin=new AdminLogin();
 		admin.setOid(key);
-		admin=ModelQueryList.getModel(admin,1);
-		admin.setPassword("");
+		admin=ModelQueryUtil.getModel(admin,1);
 		return admin;
 	}
 }
