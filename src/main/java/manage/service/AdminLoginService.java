@@ -96,7 +96,7 @@ public class AdminLoginService extends Service {
 				model.setStatus("0");
 				model.setPassword(StringUtil.toMD5(model.getPassword()));
 				ModelUpdateUtil.insertModel(model);
-				if(null!=link&&null!=link.getAdminGroup()) {
+				if(null!=link&&null!=link.getAdminGroup()&&!StringUtil.isSpace(link.getAdminGroup().getOid())) {
 					link.setAdminGroup(ModelQueryList.getModel(link.getAdminGroup(), new String[] {"oid"}));
 					if(null!=link.getAdminGroup()) {
 						link.setOid(GenerateID.generatePrimaryKey());
