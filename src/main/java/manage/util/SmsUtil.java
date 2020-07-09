@@ -52,7 +52,7 @@ public class SmsUtil {
 			throw new MException(SmsUtil.class,"获取验证码太快了!");
 		}
 		Random ne=new Random();
-        String code=String.valueOf(ne.nextInt(99999-10000+1)+10000);
+        String code=String.valueOf(ne.nextInt(9000)+1000);
 		if(sys.getSmsDebug().equals("Y")){
 			CacheUtil.push("verifyPhone_"+phone, code);
 			CacheUtil.push("verifyPhone_"+ip, new Date().getTime());

@@ -2,6 +2,8 @@ package manage.util.page;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -559,9 +561,16 @@ public class ActionTableUtil {
 	 */
 	public static SheetObject toExcelSheet(ActionTableMeta tableMeta,List<JSONMessage> data,String sheetName) throws MException, WriteException, IOException{
 		List<SheetRow> rows=new ArrayList<SheetRow>();
-		rows.add(toHeadCell(tableMeta.cols()));
-		rows.addAll(toBodyCell(tableMeta.cols(),data));
-		return new SheetObject(rows.toArray(new SheetRow[]{}),sheetName);
+		List<Integer[]> mergeCells=new ArrayList<Integer[]>();
+		List<SheetRow> headRow=toHeadCell(tableMeta.cols());
+		mergeCells.addAll(toHeadMergeCells(headRow));
+		rows.addAll(headRow);
+		List<SheetRow> bodyRow=toBodyCell(tableMeta.cols(),data);
+		int colNum=headRow.get(0).getCells().length;
+		int rowspanNum=tableMeta.rowspanIndex()+tableMeta.rowspanNum()>=colNum?colNum-tableMeta.rowspanIndex():tableMeta.rowspanNum();
+		mergeCells.addAll(toBodyMergeCells(headRow.size(),bodyRow,tableMeta.rowspanIndex(),rowspanNum));
+		rows.addAll(bodyRow);
+		return new SheetObject(rows.toArray(new SheetRow[]{}),sheetName).setMergeCells(mergeCells);
 	}
 	/**
 	 * 填充头信息
@@ -569,23 +578,110 @@ public class ActionTableUtil {
 	 * @param fields
 	 * @throws WriteException
 	 */
-	private static SheetRow toHeadCell(ActionTableColMeta[] fields) throws WriteException{
+	private static List<SheetRow> toHeadCell(ActionTableColMeta[] fields) throws WriteException{
+		List<SheetRow> rows=new ArrayList<SheetRow>();
 		List<SheetCell> cells=new ArrayList<SheetCell>();
+		int max=0;
 		for(int i=0;i<fields.length;i++){
 			ActionTableColMeta field=fields[i];
-			if(field.type()!=TableColType.NORMAL) continue;
-			cells.add(SheetCell.headCell(field.title(),field.width(),toAlignment(field.align())));
+			if(field.groupTitle().length>max) max=field.groupTitle().length;
+			if(isExcelField(field)){
+				cells.add(SheetCell.headCell(field.title(),toWidth(field),toAlignment(field)));
+			}
 		}
-		return new SheetRow(cells.toArray(new SheetCell[]{}),20);
+		for(int i=0;i<max;i++) {
+			List<SheetCell> cs=new ArrayList<SheetCell>();
+			for(int j=0;j<fields.length;j++) {
+				ActionTableColMeta field=fields[j];
+				if(isExcelField(field)) {
+					if(field.groupTitle().length>i) {
+						cs.add(SheetCell.headCell(field.groupTitle()[i],toWidth(field),Alignment.CENTRE));
+					}else {
+						cs.add(SheetCell.headCell(field.title(),toWidth(field),toAlignment(field)));
+					}
+				}
+			}
+			rows.add(new SheetRow(cs.toArray(new SheetCell[] {}),10));
+		}
+		rows.add(new SheetRow(cells.toArray(new SheetCell[]{}),15));
+		return rows;
 	}
-	private static Alignment toAlignment(String align){
+	private static List<Integer[]> toHeadMergeCells(List<SheetRow> headRow){
+		List<Integer[]> mc=new ArrayList<Integer[]>();
+		List<Boolean[]> flag=new ArrayList<Boolean[]>();
+		int max=0;
+		for(int i=0;i<headRow.size();i++) {
+			SheetCell[] scs=headRow.get(i).getCells();
+			if(scs.length>max) max=scs.length;
+			flag.add(new Boolean[scs.length]);
+			String tmp="";
+			int tip=0;
+			for(int j=0;j<scs.length;j++) {
+				SheetCell sc=scs[j];
+				if(tmp.equals(sc.getContent())&&(i==0||flag.get(i-1)[j])) {
+					flag.get(i)[j]=true;
+				}else {
+					if(j>0&&j-1!=tip) mc.add(new Integer[] {tip,i,j-1,i});
+					tmp=toContent(sc.getContent(),sc.getFormat());
+					tip=j;
+					flag.get(i)[j]=false;
+				}
+			}
+			if(scs.length-1!=tip) mc.add(new Integer[] {tip,i,scs.length-1,i});
+		}
+		for(int n=0;n<max;n++) {
+			String tmp="";
+			int tip=0;
+			for(int i=0;i<headRow.size();i++) {
+				SheetCell sc=headRow.get(i).getCells()[n];
+				if(tmp.equals(sc.getContent())) {
+					
+				}else {
+					if(i>0&&tip!=i-1) mc.add(new Integer[] {n,tip,n,i-1});
+					tmp=toContent(sc.getContent(),sc.getFormat());
+					tip=i;
+				}
+			}
+			if(tip!=headRow.size()-1) mc.add(new Integer[] {n,tip,n,headRow.size()-1});
+		}
+		return mc;
+	}
+	private static String toContent(Object content,String format) {
+		if(StringUtil.isSpace(format)) {
+			return content.toString();
+		}else if(content instanceof Number) {
+			return new DecimalFormat(format).format(new Double(content.toString()));
+		}else if(content instanceof Date) {
+			return new SimpleDateFormat(format).format((Date)content);
+		}
+		return content.toString();
+	}
+	private static Alignment toAlignment(ActionTableColMeta field){
+		if(field.type()==TableColType.INDEX) {
+			return Alignment.CENTRE;
+		}
 		Alignment a=Alignment.LEFT;
-		if("center".equals(align)){
+		if("center".equals(field.align())){
 			a=Alignment.CENTRE;
-		}else if("right".equals(align)){
+		}else if("right".equals(field.align())){
 			a=Alignment.RIGHT;
 		}
 		return a;
+	}
+	private static int toWidth(ActionTableColMeta field) {
+		if(field.type()==TableColType.INDEX) {
+			return 35;
+		}
+		return field.width();
+	}
+	private static boolean isExcelField(ActionTableColMeta field) {
+		if(field.isExcel()
+			&&(field.type()==TableColType.NORMAL
+				||field.type()==TableColType.INDEX
+				||field.type()==TableColType.STATUS)) {
+			return true;
+		}
+		return false;
 	}
 	/**
 	 * 填充内容
@@ -601,16 +697,56 @@ public class ActionTableUtil {
 			List<SheetCell> cells=new ArrayList<SheetCell>();
 			for(int j=0;j<fields.length;j++){
 				ActionTableColMeta field=fields[j];
-				if(field.type()!=TableColType.NORMAL) continue;
-				String content="";
-				if(null!=data.get(i).get(getFieldName(field))){
-					content=data.get(i).get(getFieldName(field)).toString();
+				if(isExcelField(field)) {
+					Object content;
+					if(field.type()==TableColType.INDEX) {
+						content=String.valueOf(i+1);
+						cells.add(new SheetCell(content,toWidth(field),toAlignment(field)));
+					}else if(null!=data.get(i).get(getFieldName(field))){
+						String tmp=data.get(i).get(getFieldName(field)).toString();
+						if(!(StringUtil.isSpace(tmp)||StringUtil.isSpace(field.dateFormat()))) {
+							content=DateUtil.format(tmp,field.dateFormat());
+							cells.add(new SheetCell(content,field.dateFormat(),toWidth(field),toAlignment(field)));
+						}else if(!(StringUtil.isSpace(tmp)||StringUtil.isSpace(field.numberFormat()))) {
+							content=Double.parseDouble(tmp.replaceAll(",", ""));
+							cells.add(new SheetCell(content,field.numberFormat(),toWidth(field),toAlignment(field)));
+						}else {
+							cells.add(new SheetCell(tmp,toWidth(field),toAlignment(field)));
+						}
+					}else {
+						cells.add(new SheetCell("",toWidth(field),toAlignment(field)));
+					}
 				}
-				cells.add(new SheetCell(content,field.width(),toAlignment(field.align())));
 			}
 			rows.add(new SheetRow(cells.toArray(new SheetCell[]{})));
 		}
 		return rows;
+	}
+	private static List<Integer[]> toBodyMergeCells(int topRowNum,List<SheetRow> bodyRow,int spanIndex,int spanNum){
+		List<Integer[]> mc=new ArrayList<Integer[]>();
+		List<Boolean[]> flag=new ArrayList<Boolean[]>();
+		for(int n=spanIndex;n<spanIndex+spanNum;n++) {
+			String tmp="";
+			int tip=0;
+			flag.add(new Boolean[bodyRow.size()]);
+			for(int i=0;i<bodyRow.size();i++) {
+				SheetCell sc=bodyRow.get(i).getCells()[n];
+				if(tmp.equals(sc.getContent())
+					&&(n==spanIndex
+						||n>spanIndex&&flag.get(n-spanIndex-1)[i]
+					)) {
+					flag.get(n-spanIndex)[i]=true;
+					//
+				}else {
+					if(i>0&&tip!=i-1) mc.add(new Integer[] {n,tip+topRowNum,n,i-1+topRowNum});
+					tmp=toContent(sc.getContent(),sc.getFormat());
+					tip=i;
+					flag.get(n-spanIndex)[i]=false;
+				}
+			}
+			if(tip!=bodyRow.size()-1) mc.add(new Integer[] {n,tip+topRowNum,n,bodyRow.size()-1+topRowNum});
+		}
+		return mc;
 	}
 
 }

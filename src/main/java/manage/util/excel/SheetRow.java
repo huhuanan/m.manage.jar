@@ -1,9 +1,11 @@
 package manage.util.excel;
 
+import java.util.ArrayList;
+import java.util.List;
 
 public class SheetRow {
 	private Integer height;
-	private SheetCell[] cells;
+	private List<SheetCell> cells;
 
 	/**
 	 * 
@@ -18,23 +20,19 @@ public class SheetRow {
 	 * @param height
 	 */
 	public SheetRow(SheetCell[] cells,Integer height){
-		this.cells=cells;
+		this.cells=new ArrayList<SheetCell>();
+		for(SheetCell sc : cells) {
+			this.cells.add(sc);
+		}
 		this.height=height;
 	}
 
 
-	protected SheetCell[] getCells() {
-		return cells;
+	public SheetCell[] getCells() {
+		return cells.toArray(new SheetCell[] {});
 	}
 
-
-	protected void setCells(SheetCell[] cells) {
-		this.cells = cells;
-	}
-	protected Integer getHeight() {
+	public Integer getHeight() {
 		return height;
-	}
-	protected void setHeight(Integer height) {
-		this.height = height;
 	}
 }

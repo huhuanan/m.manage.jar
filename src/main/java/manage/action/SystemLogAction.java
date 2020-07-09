@@ -1,9 +1,15 @@
 package manage.action;
 
+import jxl.format.Alignment;
 import m.common.action.ActionMeta;
+import m.common.action.ActionResult;
 import m.system.RuntimeData;
 import m.system.util.JSONMessage;
 import manage.service.SystemLogService;
+import manage.util.excel.ExcelObject;
+import manage.util.excel.SheetCell;
+import manage.util.excel.SheetObject;
+import manage.util.excel.SheetRow;
 import manage.util.page.button.ButtonMeta;
 import manage.util.page.button.ButtonMeta.ButtonEvent;
 import manage.util.page.button.ButtonMeta.ButtonStyle;
@@ -62,11 +68,20 @@ public class SystemLogAction extends ManageAction {
 			@ButtonMeta(title="清除日志", event = ButtonEvent.AJAX, url = "action/manageSystemLog/doClear", 
 				success=SuccessMethod.REFRESH,style=ButtonStyle.NORMAL,confirm="确定要清除全部日志吗?",
 				power="manage_system_power"
+			),
+			@ButtonMeta(title="导出全部", event = ButtonEvent.OPEN, url = "action/manageSystemLog/systemLogExcel", 
+				style=ButtonStyle.DEFAULT,power="manage_system_power"
 			)
 		}
 	)
 	public JSONMessage systemLogData(){
 		return getListDataResult(null);
+	}
+	public ActionResult systemLogExcel() throws Exception {
+		SheetObject es=getExcelSheet("systemLogData", null, "导出excel");
+		ExcelObject eo=new ExcelObject("导出");
+		eo.addSheet(es);
+		return toExportExcel(eo);
 	}
 	
 	@Override

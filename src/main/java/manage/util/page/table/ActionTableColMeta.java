@@ -85,6 +85,11 @@ public @interface ActionTableColMeta {
 	 */
 	boolean sort() default false;//排序
 	/**
+	 * 导出引用时, 是否导出
+	 * @return
+	 */
+	boolean isExcel() default true;
+	/**
 	 * 默认排序,只能设置一个
 	 * @return
 	 */
